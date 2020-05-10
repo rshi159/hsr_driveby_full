@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>hsr_driveby_full</name>
+  <version>0.0.0</version>
+  <description>The hsr_driveby_full package</description>
+
+  <maintainer email="rs36@todo.todo">rs36</maintainer>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>exotica_python</build_depend>
+  <build_depend>hsr_description</build_depend>
+  <build_depend>hsr_meshes</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_export_depend>exotica_python</build_export_depend>
+  <build_export_depend>hsr_description</build_export_depend>
+  <build_export_depend>hsr_meshes</build_export_depend>
+  <build_export_depend>gazebo_ros</build_export_depend>
+  <exec_depend>exotica_python</exec_depend>
+  <exec_depend>hsr_description</exec_depend>
+  <exec_depend>hsr_meshes</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+</package>

@@ -1,0 +1,140 @@
+- name: marker0001
+  object_id: 1 # should be unique
+  marker:
+    - marker_id: 1 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0002
+  object_id: 2 # should be unique
+  marker:
+    - marker_id: 2 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0003
+  object_id: 3 # should be unique
+  marker:
+    - marker_id: 3 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0004
+  object_id: 4 # should be unique
+  marker:
+    - marker_id: 4 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0005
+  object_id: 5 # should be unique
+  marker:
+    - marker_id: 5 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0006
+  object_id: 6 # should be unique
+  marker:
+    - marker_id: 6 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0007
+  object_id: 7 # should be unique
+  marker:
+    - marker_id: 7 # should be unique
+      size: 0.036 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0008
+  object_id: 8 # should be unique
+  marker:
+    - marker_id: 8 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0009
+  object_id: 9 # should be unique
+  marker:
+    - marker_id: 9 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0010
+  object_id: 10 # should be unique
+  marker:
+    - marker_id: 10 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0011
+  object_id: 11 # should be unique
+  marker:
+    - marker_id: 11 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0012
+  object_id: 12 # should be unique
+  marker:
+    - marker_id: 12 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0013
+  object_id: 13 # should be unique
+  marker:
+    - marker_id: 13 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0014
+  object_id: 14 # should be unique
+  marker:
+    - marker_id: 14 # should be unique
+      size: 0.045 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0015
+  object_id: 15 # should be unique
+  marker:
+    - marker_id: 15 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0016
+  object_id: 16 # should be unique
+  marker:
+    - marker_id: 16 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0017
+  object_id: 17 # should be unique
+  marker:
+    - marker_id: 17 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0018
+  object_id: 18 # should be unique
+  marker:
+    - marker_id: 18 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0019
+  object_id: 19 # should be unique
+  marker:
+    - marker_id: 19 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)
+- name: marker0020
+  object_id: 20 # should be unique
+  marker:
+    - marker_id: 20 # should be unique
+      size: 0.15 # [m]
+      translation: [0.0, 0.0, 0.0] # [m] object to marker (optional)
+      rotation: [0.0, 0.0, 0.0, 1.0] # object to marker in quaternion or rpy (optional)

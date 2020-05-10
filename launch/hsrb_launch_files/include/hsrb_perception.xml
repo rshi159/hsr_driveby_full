@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="/hsrb" />
+
+  <include file="$(find hsr_driveby_full)/launch/hsrb_launch_files/recognizer.launch" >
+    <arg name="frame_id" value="head_l_stereo_camera_frame"/>
+    <arg name="left_camera_image_topic"
+         value="$(arg namespace)/head_l_stereo_camera/image_rect_color" />
+    <arg name="left_camera_info_topic"
+         value="$(arg namespace)/head_l_stereo_camera/camera_info" />
+    <arg name="right_camera_image_topic"
+         value="$(arg namespace)/head_r_stereo_camera/image_rect_color" />
+    <arg name="right_camera_info_topic"
+         value="$(arg namespace)/head_r_stereo_camera/camera_info" />
+    <arg name="use_tf" value="true"/>
+    <arg name="polygon_area_max_thresh" value="400000" />
+  </include>
+
+  <!-- 置き場所検出 -->
+  <node pkg="tmc_placement_area_detector" name="placement_area_detector"
+        type="placement_area_detector_node">
+    <param name="distance_threshold" value="0.01" />
+    <param name="grid_size" value="0.02" />
+    <param name="do_narrow_restricted_range" value="true" />
+    <rosparam param="above_range">[0.01, 0.1]</rosparam>
+    <rosparam param="restricted_placement_range">[0.05, 0.15]</rosparam>
+    <remap from="/camera/depth_registered/points"
+           to="$(arg namespace)/head_rgbd_sensor/depth_registered/rectified_points" />
+  </node>
+
+  <include file="$(find tmc_tabletop_segmentator)/launch/server.launch" >
+    <arg name="rgb_image_name" value="$(arg namespace)/head_rgbd_sensor/rgb/image_rect_color" />
+    <arg name="rgb_camera_info_name" value="$(arg namespace)/head_rgbd_sensor/rgb/camera_info" />
+    <arg name="depth_image_name" value="$(arg namespace)/head_rgbd_sensor/depth_registered/image_rect_raw" />
+    <arg name="depth_camera_info_name" value="$(arg namespace)/head_rgbd_sensor/depth_registered/camera_info" />
+  </include>
+</launch>

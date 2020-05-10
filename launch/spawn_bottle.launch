@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="x" default="-0.379" />
+  <arg name="y" default="-0.005" />
+  <arg name="z" default="0.458" />
+  <arg name="Y" default="-3.138" />
+  <node name="spawn_bottle" pkg="gazebo_ros" type="spawn_model"
+        args="-sdf -database hsr_soda_with_marker -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg Y) -model bottle" />
+</launch>

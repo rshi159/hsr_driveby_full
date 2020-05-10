@@ -1,0 +1,59 @@
+<launch>
+  <arg name="node_name" default="marker" />
+  <arg name="auto_start" default="true" />
+  <arg name="recognition_mode" default="ar_marker_mode"/>
+  <arg name="db_filename" default="$(find hsr_driveby_full)/object/marker.yaml" />
+  <arg name="image_marker_db_filename" default="$(find tmc_stereo_marker_recognizer)/cfg/image_marker_config.yaml" />
+  <arg name="image_marker_directory_path" default="$(find tmc_stereo_marker_recognizer)/cfg/image_marker/" />
+  <arg name="frame_id" default="stereo_marker" />
+  <arg name="polygon_area_min_thresh" default="400" />
+  <arg name="polygon_area_max_thresh" default="100000" />
+  <arg name="marker_aspect_ratio_thresh" default="6" />
+  <arg name="marker_distance_thresh" default="10" />
+  <arg name="image_marker_matching_ratio_thresh" default="0.85" />
+  <arg name="epipolar_thresh" default="5.0" />
+  <arg name="size_accuracy_ratio_thresh" default="0.8"/>
+  <arg name="show_detected_marker" default="false" />
+  <arg name="use_tf" default="false" />
+  <arg name="publish_rate" default="0" />
+  <arg name="image_scale" default="1.0" />
+  <arg name="image_transport" default="raw" />
+
+  <arg name="left_camera_image_topic" default="stereo_camera/left/rectified_image" />
+  <arg name="left_camera_info_topic" default="stereo_camera/left/camera_info" />
+  <arg name="right_camera_image_topic" default="stereo_camera/right/rectified_image" />
+  <arg name="right_camera_info_topic" default="stereo_camera/right/camera_info" />
+  <arg name="marker_recognition_result_topic" default="ar_marker" />
+  <arg name="object_recognition_result_topic" default="recognized_object" />
+
+  <node pkg="tmc_stereo_marker_recognizer" name="$(arg node_name)" type="stereo_marker_recognizer_node" output="log" respawn="true">
+    <param name="node_name" value="stereo_marker_recognizer" />
+    <param name="output" value="log" />
+
+    <param name="auto_start" value="$(arg auto_start)" />
+    <param name="recognition_mode" value="$(arg recognition_mode)"/>
+    <param name="db_filename" value="$(arg db_filename)" />
+    <param name="frame_id" value="$(arg frame_id)" />
+    <param name="image_marker_db_filename" value="$(arg image_marker_db_filename)" />
+    <param name="image_marker_directory_path" value="$(arg image_marker_directory_path)" />
+    <param name="polygon_area_min_thresh" value="$(arg polygon_area_min_thresh)" />
+    <param name="polygon_area_max_thresh" value="$(arg polygon_area_max_thresh)" />
+    <param name="marker_aspect_ratio_thresh" value="$(arg marker_aspect_ratio_thresh)" />
+    <param name="marker_distance_thresh" value="$(arg marker_distance_thresh)" />
+    <param name="image_marker_matching_ratio_thresh" value="$(arg image_marker_matching_ratio_thresh)" />
+    <param name="epipolar_thresh" value="$(arg epipolar_thresh)" />
+    <param name="size_accuracy_ratio_thresh" value="$(arg size_accuracy_ratio_thresh)"/>
+    <param name="use_tf" value="$(arg use_tf)" />
+    <param name="show_detected_marker" value="$(arg show_detected_marker)" />
+    <param name="publish_rate" value="$(arg publish_rate)" />
+    <param name="image_scale" value="$(arg image_scale)" />
+    <param name="image_transport" value="$(arg image_transport)" />
+
+    <remap from="stereo_camera/left/rectified_image" to="$(arg left_camera_image_topic)"/>
+    <remap from="stereo_camera/left/camera_info" to="$(arg left_camera_info_topic)"/>
+    <remap from="stereo_camera/right/rectified_image" to="$(arg right_camera_image_topic)"/>
+    <remap from="stereo_camera/right/camera_info" to="$(arg right_camera_info_topic)"/>
+    <remap from="$(arg node_name)/marker_info" to="$(arg marker_recognition_result_topic)"/>
+    <remap from="$(arg node_name)/object_info" to="$(arg object_recognition_result_topic)"/>
+  </node>
+</launch>

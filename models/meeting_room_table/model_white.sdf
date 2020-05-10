@@ -1,0 +1,111 @@
+<sdf version='1.4'>
+    <model name='*meeting_room_table'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <link name='*meeting_room_table_0'>
+            <pose>0.000000 0.000000 0.712500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>1.400000 0.700000 0.025000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>1.400000 0.700000 0.025000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_1'>
+            <pose>0.690000 0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.725000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.725000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_2'>
+            <pose>-0.690000 0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_3'>
+            <pose>0.690000 -0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_4'>
+            <pose>-0.690000 -0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <static>1</static>
+    </model>
+</sdf>

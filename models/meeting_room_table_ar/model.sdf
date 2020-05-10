@@ -1,0 +1,149 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+    <model name='*meeting_room_table_ar'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <link name='*meeting_room_table_top'>
+            <pose>0.000000 0.000000 0.712500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>1.400000 0.700000 0.025000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>1.400000 0.700000 0.025000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <!-- <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse> -->
+                    <script>
+                        <uri>model://base_materials/wood/scripts/wood.material</uri>
+                        <name>base_materials/dark_wood</name>
+                    </script>
+                </material>
+            </visual>
+        
+			<visual name='marker_0001'>
+          		<pose>0 0.35 -0.07 0 1.57 -1.57</pose>
+          		<geometry>
+            		<box>
+				        <size>0.14 0.14 0.0001</size>
+				    </box>
+          		</geometry>
+
+				<material>
+				<script>
+				    <uri>model://marker/0001/scripts</uri>
+				    <uri>model://marker/0001/textures</uri>
+				    <name>Marker/0001</name>
+				</script>
+				</material>
+        	</visual>
+        </link>
+        <link name='*meeting_room_table_leg1'>
+            <pose>0.690000 0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.725000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.725000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <!-- <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse> -->
+                    <script>
+                        <uri>model://base_materials/wood/scripts/wood.material</uri>
+                        <name>base_materials/dark_wood</name>
+                    </script>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_leg2'>
+            <pose>-0.690000 0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <!-- <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse> -->
+                    <script>
+                        <uri>model://base_materials/wood/scripts/wood.material</uri>
+                        <name>base_materials/dark_wood</name>
+                    </script>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_leg3'>
+            <pose>0.690000 -0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <!-- <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse> -->
+                    <script>
+                        <uri>model://base_materials/wood/scripts/wood.material</uri>
+                        <name>base_materials/dark_wood</name>
+                    </script>
+                </material>
+            </visual>
+        </link>
+        <link name='*meeting_room_table_leg4'>
+            <pose>-0.690000 -0.340000 0.362500 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.700000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <!-- <ambient>1.000000 1.000000 1.000000 1.000000</ambient>
+                    <diffuse>1.000000 1.000000 1.000000 1.000000</diffuse> -->
+                    <script>
+                        <uri>model://base_materials/wood/scripts/wood.material</uri>
+                        <name>base_materials/dark_wood</name>
+                    </script>
+                </material>
+            </visual>
+        </link>
+        <static>1</static>
+    </model>
+</sdf>

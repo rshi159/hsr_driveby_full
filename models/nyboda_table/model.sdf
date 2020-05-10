@@ -1,0 +1,132 @@
+<sdf version='1.5'>
+    <model name='nyboda_table'>
+        <pose>0.000000 0.000000 0.000000 0.000000 0.000000 0.000000</pose>
+        <link name='Table_0'>
+            <pose>0.000000 0.000000 0.380000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>1.200000 0.400000 0.020000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>1.200000 0.400000 0.020000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 0.5</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='Table_1'>
+            <pose>0.590000 0.190000 0.190000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='Table_2'>
+            <pose>-0.590000 0.190000 0.190000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='Table_3'>
+            <pose>0.590000 -0.190000 0.190000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='Table_4'>
+            <pose>-0.590000 -0.190000 0.190000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>0.020000 0.020000 0.400000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 1.000000</diffuse>
+                </material>
+            </visual>
+        </link>
+        <link name='Table_5'>
+            <pose>0.000000 0.000000 0.290000 0.000000 -0.000000 0.000000</pose>
+            <collision name='collision'>
+                <geometry>
+                    <box>
+                        <size>1.200000 0.400000 0.020000</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <box>
+                        <size>1.200000 0.400000 0.020000</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>.5 .5 .5 1</ambient>
+                    <diffuse>.5 .5 .5 0.2</diffuse>
+                </material>
+            </visual>
+        </link>
+        <static>1</static>
+    </model>
+</sdf>

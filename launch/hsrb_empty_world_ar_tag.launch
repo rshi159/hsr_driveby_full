@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="/hsrb"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true" />
+  <arg name="rviz" default="true"/>
+  <arg name="gazebo_visualization" default="false" />
+  <arg name="use_manipulation" default="true" />
+  <arg name="use_navigation" default="true" />
+  <arg name="use_perception" default="true" />
+  <arg name="use_task" default="true" />
+  <arg name="use_teleop" default="true" />
+  <arg name="use_web" default="true" />
+  <arg name="use_laser_odom" default="false" />
+  <arg name="paused" default="true" />
+  <arg name="fast_physics" default="false" />
+  <arg name="robot_name" default="$(optenv ROBOT_NAME hsrb)" />
+
+  <arg unless="$(arg fast_physics)" name="world_suffix" value=""/>
+  <arg     if="$(arg fast_physics)" name="world_suffix" value="_fast"/>
+
+  <!--<include file="$(find hsrb_gazebo_launch)/launch/include/hsrb_gazebo_common.xml" pass_all_args="true" >-->
+  <include file="$(find hsr_driveby_full)/launch/hsrb_launch_files/include/hsrb_gazebo_common.xml" pass_all_args="true" >
+    <arg name="map" value="$(find tmc_potential_maps)/maps/white_space/map.yaml" />
+    <!--<arg name="robot_pos" value="-x .7 -y -.7 -z 0 -Y 3.14159" />-->
+    <arg name="world_name" value="$(find tmc_gazebo_worlds)/worlds/empty$(arg world_suffix).world"/>
+  </include>
+
+  <arg name="table_x" default="0.7" />
+  <arg name="table_y" default="-0.7" />
+  <node name="spawn_table" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find hsr_driveby_full)/models/meeting_room_table_ar/model.sdf -sdf -x $(arg table_x) -y $(arg table_y) -model my_table" />
+  <!--<arg name="bottle_x" default="-0.2 + 0.7" />
+  <arg name="bottle_y" default="-0.3 + 0.7" />-->
+  <arg name="bottle_x" default="0.9" />
+  <arg name="bottle_y" default="-0.4" />
+  <arg name="bottle_z" default="0.8125" />
+  <!--2.5 to face robot-->
+  <arg name="bottle_Y" default="2.5" />
+  <!--<node name="spawn_bottle" pkg="gazebo_ros" type="spawn_model"
+        args="-sdf -database hsr_soda_with_marker -x $(arg bottle_x) -y $(arg bottle_y) -z $(arg bottle_z) -Y $(arg bottle_Y) -model bottle" />-->
+  <node name="spawn_bottle" pkg="gazebo_ros" type="spawn_model"
+  	args="-file $(find hsr_driveby_full)/models/hsr_soda_with_ar_marker/model.sdf -sdf -x $(arg bottle_x) -y $(arg bottle_y) -z $(arg bottle_z) -Y $(arg bottle_Y) -model bottle" />-->
+</launch>

@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="namespace" default="/hsrb"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true" />
+  <arg name="rviz" default="true"/>
+  <arg name="gazebo_visualization" default="false" />
+  <arg name="use_manipulation" default="true" />
+  <arg name="use_navigation" default="true" />
+  <arg name="use_perception" default="true" />
+  <arg name="use_task" default="true" />
+  <arg name="use_teleop" default="true" />
+  <arg name="use_web" default="true" />
+  <arg name="use_laser_odom" default="false" />
+  <arg name="paused" default="true" />
+  <arg name="fast_physics" default="false" />
+  <arg name="robot_name" default="$(optenv ROBOT_NAME hsrb)" />
+
+  <arg unless="$(arg fast_physics)" name="world_suffix" value=""/>
+  <arg     if="$(arg fast_physics)" name="world_suffix" value="_fast"/>
+
+  <include file="$(find hsr_driveby_full)/launch/hsrb_launch_files/include/hsrb_gazebo_common.xml" pass_all_args="true" >
+    <arg name="map" value="$(find tmc_potential_maps)/maps/white_space/map.yaml" />
+    <!--<arg name="robot_pos" value="-x .7 -y -.7 -z 0 -Y 3.14159" />-->
+    <arg name="world_name" value="$(find tmc_gazebo_worlds)/worlds/empty$(arg world_suffix).world"/>
+  </include>
+
+  <!-- lauch apriltag node -->
+
+  <arg name="table_x" default="2.0" />
+  <arg name="table_y" default="0.0" />
+  <arg name = "table_Y" default="1.57" />
+  <node name="spawn_table" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find hsr_driveby_full)/models/meeting_room_table/model.sdf -sdf -x $(arg table_x) -y $(arg table_y) -Y $(arg table_Y) -model my_table" />
+  <!--<arg name="bottle_x" default="-0.2 + 0.7" />
+  <arg name="bottle_y" default="-0.3 + 0.7" />-->
+  <!-- <arg name="bottle_x" default="1.8" />
+  <arg name="bottle_y" default="0.3" /> -->
+  <arg name="bottle_x" default="1.7" />
+  <arg name="bottle_y" default="0.2" />
+  <arg name="bottle_z" default="0.8125" />
+  <!--2.5 to face robot-->
+  <arg name="bottle_Y" default="3.1415" />
+  <node name="spawn_bottle" pkg="gazebo_ros" type="spawn_model"
+        args="-sdf -database hsr_soda_with_marker -x $(arg bottle_x) -y $(arg bottle_y) -z $(arg bottle_z) -Y $(arg bottle_Y) -model bottle" />
+  <!--from continuous_detection.launch in apriltag_ros/launch-->
+  <arg name="launch_prefix" default="" /> <!-- set to value="gdbserver localhost:10000" for remote debugging -->
+  <arg name="node_namespace" default="apriltag_ros_continuous_node" />
+  <!-- <arg name="camera_frame_id" default="/hsrb/head_center_camera" /> -->
+  <!-- <arg name="camera_frame" default="head_center_camera_frame" /> -->
+  <arg name="camera_frame_id" default="/hsrb/head_rgbd_sensor/rgb" />
+  <arg name="camera_frame" default="head_rgbd_sensor_rgb_frame" />
+  <arg name="image_topic" default="image_color" />
+  <!--
+  <arg name="camera_frame_id" default="/camera_rect" />
+  <arg name="camera_frame" default="camera" />
+  <arg name="image_topic" default="image_rect" />
+  -->
+
+  <!-- Set parameters -->
+  <rosparam command="load" file="$(find hsr_driveby_full)/config/settings.yaml" ns="$(arg node_namespace)" />
+  <rosparam command="load" file="$(find hsr_driveby_full)/config/tags.yaml" ns="$(arg node_namespace)" />
+  
+  <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="$(arg node_namespace)" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)" >
+    <!-- Remap topics from those used in code to those on the ROS network -->
+    <remap from="image_rect" to="$(arg camera_frame_id)/$(arg image_topic)" />
+    <remap from="camera_info" to="$(arg camera_frame_id)/camera_info" />
+
+    <param name="camera_frame" type="str" value="$(arg camera_frame)" />
+    <param name="publish_tag_detections_image" type="bool" value="true" />      <!-- default: false -->
+  </node>
+</launch>
