@@ -28,6 +28,9 @@
  u'hand_r_mimic_distal_joint',
  u'hand_r_distal_joint',
  u'base_roll_joint', -->
+	</group>
+	<group name="base">
+		<joint name="world_joint"/>
     </group>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="world_joint" type="planar" parent_frame="world_frame" child_link="base_footprint" />

@@ -9,8 +9,10 @@ Panels:
         - /Grid1
         - /RobotModel1
         - /MarkerArray1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 530
+    Tree Height: 1333
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -19,7 +21,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.5886790156364441
+    Splitter Ratio: 0.588679016
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -31,20 +33,18 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
-Preferences:
-  PromptSaveOnExit: true
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 0.009999999776482582
+      Cell Size: 0.00999999978
       Class: rviz/Grid
       Color: 233; 185; 110
       Enabled: true
       Line Style:
-        Line Width: 0.029999999329447746
+        Line Width: 0.0299999993
         Value: Billboards
       Name: Grid
       Normal Cell Count: 0
@@ -283,6 +283,857 @@ Visualization Manager:
         CollisionObjects: true
       Queue Size: 100
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        exotica/BaseTarget:
+          Value: false
+        exotica/Frame0Ahand_palm_link:
+          Value: false
+        exotica/Frame0Bworld_frame:
+          Value: false
+        exotica/Frame1Ahand_palm_link:
+          Value: false
+        exotica/Frame1Bworld_frame:
+          Value: false
+        exotica/Frame2Ahand_palm_link:
+          Value: false
+        exotica/Frame2Bworld_frame:
+          Value: false
+        exotica/Frame3Ahand_palm_link:
+          Value: false
+        exotica/Frame3BTable:
+          Value: false
+        exotica/Frame4Abase_footprint:
+          Value: false
+        exotica/Frame4BBaseTarget:
+          Value: false
+        exotica/SodaCan:
+          Value: false
+        exotica/SodaCan_collision_0:
+          Value: false
+        exotica/Table:
+          Value: false
+        exotica/Table_collision_0:
+          Value: false
+        exotica/Table_collision_1:
+          Value: false
+        exotica/Table_collision_2:
+          Value: false
+        exotica/Table_collision_3:
+          Value: false
+        exotica/Table_collision_4:
+          Value: false
+        exotica/TargetObject:
+          Value: false
+        exotica/arm_flex_link:
+          Value: false
+        exotica/arm_flex_link_collision_0:
+          Value: false
+        exotica/arm_lift_link:
+          Value: false
+        exotica/arm_lift_link_collision_0:
+          Value: false
+        exotica/arm_roll_link:
+          Value: false
+        exotica/arm_roll_link_collision_0:
+          Value: false
+        exotica/base_footprint:
+          Value: false
+        exotica/base_imu_frame:
+          Value: false
+        exotica/base_l_drive_wheel_link:
+          Value: false
+        exotica/base_l_drive_wheel_link_collision_0:
+          Value: false
+        exotica/base_l_passive_wheel_x_frame:
+          Value: false
+        exotica/base_l_passive_wheel_y_frame:
+          Value: false
+        exotica/base_l_passive_wheel_z_link:
+          Value: false
+        exotica/base_l_passive_wheel_z_link_collision_0:
+          Value: false
+        exotica/base_link:
+          Value: false
+        exotica/base_link_collision_0:
+          Value: false
+        exotica/base_r_drive_wheel_link:
+          Value: false
+        exotica/base_r_drive_wheel_link_collision_0:
+          Value: false
+        exotica/base_r_passive_wheel_x_frame:
+          Value: false
+        exotica/base_r_passive_wheel_y_frame:
+          Value: false
+        exotica/base_r_passive_wheel_z_link:
+          Value: false
+        exotica/base_r_passive_wheel_z_link_collision_0:
+          Value: false
+        exotica/base_range_sensor_link:
+          Value: false
+        exotica/base_range_sensor_link_collision_0:
+          Value: false
+        exotica/base_roll_link:
+          Value: false
+        exotica/hand_camera_frame:
+          Value: false
+        exotica/hand_camera_gazebo_frame:
+          Value: false
+        exotica/hand_l_distal_link:
+          Value: false
+        exotica/hand_l_distal_link_collision_0:
+          Value: false
+        exotica/hand_l_finger_tip_frame:
+          Value: false
+        exotica/hand_l_finger_vacuum_frame:
+          Value: false
+        exotica/hand_l_finger_vacuum_frame_collision_0:
+          Value: false
+        exotica/hand_l_mimic_distal_link:
+          Value: false
+        exotica/hand_l_proximal_link:
+          Value: false
+        exotica/hand_l_spring_proximal_link:
+          Value: false
+        exotica/hand_l_spring_proximal_link_collision_0:
+          Value: false
+        exotica/hand_motor_dummy_link:
+          Value: false
+        exotica/hand_palm_link:
+          Value: false
+        exotica/hand_palm_link_collision_0:
+          Value: false
+        exotica/hand_r_distal_link:
+          Value: false
+        exotica/hand_r_distal_link_collision_0:
+          Value: false
+        exotica/hand_r_finger_tip_frame:
+          Value: false
+        exotica/hand_r_mimic_distal_link:
+          Value: false
+        exotica/hand_r_proximal_link:
+          Value: false
+        exotica/hand_r_spring_proximal_link:
+          Value: false
+        exotica/hand_r_spring_proximal_link_collision_0:
+          Value: false
+        exotica/head_center_camera_frame:
+          Value: false
+        exotica/head_center_camera_gazebo_frame:
+          Value: false
+        exotica/head_l_stereo_camera_gazebo_frame:
+          Value: false
+        exotica/head_l_stereo_camera_link:
+          Value: false
+        exotica/head_l_stereo_camera_link_collision_0:
+          Value: false
+        exotica/head_pan_link:
+          Value: false
+        exotica/head_pan_link_collision_0:
+          Value: false
+        exotica/head_r_stereo_camera_gazebo_frame:
+          Value: false
+        exotica/head_r_stereo_camera_link:
+          Value: false
+        exotica/head_r_stereo_camera_link_collision_0:
+          Value: false
+        exotica/head_rgbd_sensor_gazebo_frame:
+          Value: false
+        exotica/head_rgbd_sensor_link:
+          Value: false
+        exotica/head_rgbd_sensor_link_collision_0:
+          Value: false
+        exotica/head_tilt_link:
+          Value: false
+        exotica/head_tilt_link_collision_0:
+          Value: false
+        exotica/head_tilt_link_collision_1:
+          Value: false
+        exotica/map:
+          Value: false
+        exotica/standing.dae:
+          Value: false
+        exotica/standing.dae_collision_0:
+          Value: false
+        exotica/standing.dae_collision_1:
+          Value: false
+        exotica/torso_lift_link:
+          Value: false
+        exotica/torso_lift_link_collision_0:
+          Value: false
+        exotica/trofast.dae:
+          Value: false
+        exotica/trofast.dae_collision_0:
+          Value: false
+        exotica/world_frame:
+          Value: false
+        exotica/world_joint/theta:
+          Value: false
+        exotica/world_joint/x:
+          Value: false
+        exotica/world_joint/y:
+          Value: false
+        exotica/wrc_bin_black:
+          Value: false
+        exotica/wrc_bin_black_collision_0:
+          Value: false
+        exotica/wrc_bin_black_collision_1:
+          Value: false
+        exotica/wrc_bin_black_collision_2:
+          Value: false
+        exotica/wrc_bin_black_collision_3:
+          Value: false
+        exotica/wrc_bin_black_collision_4:
+          Value: false
+        exotica/wrc_bin_green:
+          Value: false
+        exotica/wrc_bin_green_collision_0:
+          Value: false
+        exotica/wrc_bin_green_collision_1:
+          Value: false
+        exotica/wrc_bin_green_collision_2:
+          Value: false
+        exotica/wrc_bin_green_collision_3:
+          Value: false
+        exotica/wrc_bin_green_collision_4:
+          Value: false
+        exotica/wrc_bookshelf:
+          Value: false
+        exotica/wrc_bookshelf_collision_0:
+          Value: false
+        exotica/wrc_bookshelf_collision_1:
+          Value: false
+        exotica/wrc_bookshelf_collision_2:
+          Value: false
+        exotica/wrc_bookshelf_collision_3:
+          Value: false
+        exotica/wrc_bookshelf_collision_4:
+          Value: false
+        exotica/wrc_bookshelf_collision_5:
+          Value: false
+        exotica/wrc_bookshelf_collision_6:
+          Value: false
+        exotica/wrc_bookshelf_collision_7:
+          Value: false
+        exotica/wrc_container_a:
+          Value: false
+        exotica/wrc_container_a_collision_0:
+          Value: false
+        exotica/wrc_container_a_collision_1:
+          Value: false
+        exotica/wrc_container_a_collision_2:
+          Value: false
+        exotica/wrc_container_a_collision_3:
+          Value: false
+        exotica/wrc_container_a_collision_4:
+          Value: false
+        exotica/wrc_container_b:
+          Value: false
+        exotica/wrc_container_b_collision_0:
+          Value: false
+        exotica/wrc_container_b_collision_1:
+          Value: false
+        exotica/wrc_container_b_collision_2:
+          Value: false
+        exotica/wrc_container_b_collision_3:
+          Value: false
+        exotica/wrc_container_b_collision_4:
+          Value: false
+        exotica/wrc_frame:
+          Value: false
+        exotica/wrc_frame_collision_0:
+          Value: false
+        exotica/wrc_frame_collision_1:
+          Value: false
+        exotica/wrc_frame_collision_2:
+          Value: false
+        exotica/wrc_frame_collision_3:
+          Value: false
+        exotica/wrc_frame_collision_4:
+          Value: false
+        exotica/wrc_long_table:
+          Value: false
+        exotica/wrc_long_table_collision_0:
+          Value: true
+        exotica/wrc_long_table_collision_1:
+          Value: true
+        exotica/wrc_long_table_collision_10:
+          Value: true
+        exotica/wrc_long_table_collision_11:
+          Value: true
+        exotica/wrc_long_table_collision_12:
+          Value: true
+        exotica/wrc_long_table_collision_13:
+          Value: true
+        exotica/wrc_long_table_collision_14:
+          Value: true
+        exotica/wrc_long_table_collision_15:
+          Value: true
+        exotica/wrc_long_table_collision_16:
+          Value: false
+        exotica/wrc_long_table_collision_17:
+          Value: false
+        exotica/wrc_long_table_collision_18:
+          Value: false
+        exotica/wrc_long_table_collision_19:
+          Value: false
+        exotica/wrc_long_table_collision_2:
+          Value: false
+        exotica/wrc_long_table_collision_20:
+          Value: false
+        exotica/wrc_long_table_collision_21:
+          Value: false
+        exotica/wrc_long_table_collision_22:
+          Value: false
+        exotica/wrc_long_table_collision_23:
+          Value: false
+        exotica/wrc_long_table_collision_3:
+          Value: false
+        exotica/wrc_long_table_collision_4:
+          Value: false
+        exotica/wrc_long_table_collision_5:
+          Value: false
+        exotica/wrc_long_table_collision_6:
+          Value: false
+        exotica/wrc_long_table_collision_7:
+          Value: false
+        exotica/wrc_long_table_collision_8:
+          Value: false
+        exotica/wrc_long_table_collision_9:
+          Value: false
+        exotica/wrc_stair_like_drawer:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_0:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_1:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_10:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_11:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_12:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_13:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_14:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_15:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_16:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_17:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_18:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_19:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_2:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_20:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_21:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_22:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_3:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_4:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_5:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_6:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_7:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_8:
+          Value: false
+        exotica/wrc_stair_like_drawer_collision_9:
+          Value: false
+        exotica/wrc_tall_table:
+          Value: false
+        exotica/wrc_tall_table_collision_0:
+          Value: false
+        exotica/wrc_tall_table_collision_1:
+          Value: false
+        exotica/wrc_tall_table_collision_10:
+          Value: false
+        exotica/wrc_tall_table_collision_11:
+          Value: false
+        exotica/wrc_tall_table_collision_2:
+          Value: false
+        exotica/wrc_tall_table_collision_3:
+          Value: false
+        exotica/wrc_tall_table_collision_4:
+          Value: false
+        exotica/wrc_tall_table_collision_5:
+          Value: false
+        exotica/wrc_tall_table_collision_6:
+          Value: false
+        exotica/wrc_tall_table_collision_7:
+          Value: false
+        exotica/wrc_tall_table_collision_8:
+          Value: false
+        exotica/wrc_tall_table_collision_9:
+          Value: false
+        exotica/wrc_tray:
+          Value: false
+        exotica/wrc_tray_collision_0:
+          Value: false
+        exotica/wrc_tray_collision_1:
+          Value: false
+        exotica/wrc_tray_collision_2:
+          Value: false
+        exotica/wrc_tray_collision_3:
+          Value: false
+        exotica/wrc_tray_collision_4:
+          Value: false
+        exotica/wrc_tray_collision_5:
+          Value: false
+        exotica/wrc_tray_collision_6:
+          Value: false
+        exotica/wrc_tray_collision_7:
+          Value: false
+        exotica/wrc_tray_collision_8:
+          Value: false
+        exotica/wrc_tray_collision_9:
+          Value: false
+        exotica/wrist_flex_link:
+          Value: false
+        exotica/wrist_flex_link_collision_0:
+          Value: false
+        exotica/wrist_ft_sensor_frame:
+          Value: false
+        exotica/wrist_roll_link:
+          Value: false
+        exotica/wrist_roll_link_collision_0:
+          Value: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        exotica/world_frame:
+          exotica/BaseTarget:
+            {}
+          exotica/Frame0Bworld_frame:
+            exotica/Frame0Ahand_palm_link:
+              {}
+          exotica/Frame1Bworld_frame:
+            exotica/Frame1Ahand_palm_link:
+              {}
+          exotica/Frame2Bworld_frame:
+            exotica/Frame2Ahand_palm_link:
+              {}
+          exotica/Frame3BTable:
+            exotica/Frame3Ahand_palm_link:
+              {}
+          exotica/Frame4BBaseTarget:
+            exotica/Frame4Abase_footprint:
+              {}
+          exotica/SodaCan:
+            {}
+          exotica/SodaCan_collision_0:
+            {}
+          exotica/Table:
+            {}
+          exotica/Table_collision_0:
+            {}
+          exotica/Table_collision_1:
+            {}
+          exotica/Table_collision_2:
+            {}
+          exotica/Table_collision_3:
+            {}
+          exotica/Table_collision_4:
+            {}
+          exotica/TargetObject:
+            {}
+          exotica/arm_flex_link:
+            {}
+          exotica/arm_flex_link_collision_0:
+            {}
+          exotica/arm_lift_link:
+            {}
+          exotica/arm_lift_link_collision_0:
+            {}
+          exotica/arm_roll_link:
+            {}
+          exotica/arm_roll_link_collision_0:
+            {}
+          exotica/base_footprint:
+            {}
+          exotica/base_imu_frame:
+            {}
+          exotica/base_l_drive_wheel_link:
+            {}
+          exotica/base_l_drive_wheel_link_collision_0:
+            {}
+          exotica/base_l_passive_wheel_x_frame:
+            {}
+          exotica/base_l_passive_wheel_y_frame:
+            {}
+          exotica/base_l_passive_wheel_z_link:
+            {}
+          exotica/base_l_passive_wheel_z_link_collision_0:
+            {}
+          exotica/base_link:
+            {}
+          exotica/base_link_collision_0:
+            {}
+          exotica/base_r_drive_wheel_link:
+            {}
+          exotica/base_r_drive_wheel_link_collision_0:
+            {}
+          exotica/base_r_passive_wheel_x_frame:
+            {}
+          exotica/base_r_passive_wheel_y_frame:
+            {}
+          exotica/base_r_passive_wheel_z_link:
+            {}
+          exotica/base_r_passive_wheel_z_link_collision_0:
+            {}
+          exotica/base_range_sensor_link:
+            {}
+          exotica/base_range_sensor_link_collision_0:
+            {}
+          exotica/base_roll_link:
+            {}
+          exotica/hand_camera_frame:
+            {}
+          exotica/hand_camera_gazebo_frame:
+            {}
+          exotica/hand_l_distal_link:
+            {}
+          exotica/hand_l_distal_link_collision_0:
+            {}
+          exotica/hand_l_finger_tip_frame:
+            {}
+          exotica/hand_l_finger_vacuum_frame:
+            {}
+          exotica/hand_l_finger_vacuum_frame_collision_0:
+            {}
+          exotica/hand_l_mimic_distal_link:
+            {}
+          exotica/hand_l_proximal_link:
+            {}
+          exotica/hand_l_spring_proximal_link:
+            {}
+          exotica/hand_l_spring_proximal_link_collision_0:
+            {}
+          exotica/hand_motor_dummy_link:
+            {}
+          exotica/hand_palm_link:
+            {}
+          exotica/hand_palm_link_collision_0:
+            {}
+          exotica/hand_r_distal_link:
+            {}
+          exotica/hand_r_distal_link_collision_0:
+            {}
+          exotica/hand_r_finger_tip_frame:
+            {}
+          exotica/hand_r_mimic_distal_link:
+            {}
+          exotica/hand_r_proximal_link:
+            {}
+          exotica/hand_r_spring_proximal_link:
+            {}
+          exotica/hand_r_spring_proximal_link_collision_0:
+            {}
+          exotica/head_center_camera_frame:
+            {}
+          exotica/head_center_camera_gazebo_frame:
+            {}
+          exotica/head_l_stereo_camera_gazebo_frame:
+            {}
+          exotica/head_l_stereo_camera_link:
+            {}
+          exotica/head_l_stereo_camera_link_collision_0:
+            {}
+          exotica/head_pan_link:
+            {}
+          exotica/head_pan_link_collision_0:
+            {}
+          exotica/head_r_stereo_camera_gazebo_frame:
+            {}
+          exotica/head_r_stereo_camera_link:
+            {}
+          exotica/head_r_stereo_camera_link_collision_0:
+            {}
+          exotica/head_rgbd_sensor_gazebo_frame:
+            {}
+          exotica/head_rgbd_sensor_link:
+            {}
+          exotica/head_rgbd_sensor_link_collision_0:
+            {}
+          exotica/head_tilt_link:
+            {}
+          exotica/head_tilt_link_collision_0:
+            {}
+          exotica/head_tilt_link_collision_1:
+            {}
+          exotica/map:
+            {}
+          exotica/standing.dae:
+            {}
+          exotica/standing.dae_collision_0:
+            {}
+          exotica/standing.dae_collision_1:
+            {}
+          exotica/torso_lift_link:
+            {}
+          exotica/torso_lift_link_collision_0:
+            {}
+          exotica/trofast.dae:
+            {}
+          exotica/trofast.dae_collision_0:
+            {}
+          exotica/world_joint/theta:
+            {}
+          exotica/world_joint/x:
+            {}
+          exotica/world_joint/y:
+            {}
+          exotica/wrc_bin_black:
+            {}
+          exotica/wrc_bin_black_collision_0:
+            {}
+          exotica/wrc_bin_black_collision_1:
+            {}
+          exotica/wrc_bin_black_collision_2:
+            {}
+          exotica/wrc_bin_black_collision_3:
+            {}
+          exotica/wrc_bin_black_collision_4:
+            {}
+          exotica/wrc_bin_green:
+            {}
+          exotica/wrc_bin_green_collision_0:
+            {}
+          exotica/wrc_bin_green_collision_1:
+            {}
+          exotica/wrc_bin_green_collision_2:
+            {}
+          exotica/wrc_bin_green_collision_3:
+            {}
+          exotica/wrc_bin_green_collision_4:
+            {}
+          exotica/wrc_bookshelf:
+            {}
+          exotica/wrc_bookshelf_collision_0:
+            {}
+          exotica/wrc_bookshelf_collision_1:
+            {}
+          exotica/wrc_bookshelf_collision_2:
+            {}
+          exotica/wrc_bookshelf_collision_3:
+            {}
+          exotica/wrc_bookshelf_collision_4:
+            {}
+          exotica/wrc_bookshelf_collision_5:
+            {}
+          exotica/wrc_bookshelf_collision_6:
+            {}
+          exotica/wrc_bookshelf_collision_7:
+            {}
+          exotica/wrc_container_a:
+            {}
+          exotica/wrc_container_a_collision_0:
+            {}
+          exotica/wrc_container_a_collision_1:
+            {}
+          exotica/wrc_container_a_collision_2:
+            {}
+          exotica/wrc_container_a_collision_3:
+            {}
+          exotica/wrc_container_a_collision_4:
+            {}
+          exotica/wrc_container_b:
+            {}
+          exotica/wrc_container_b_collision_0:
+            {}
+          exotica/wrc_container_b_collision_1:
+            {}
+          exotica/wrc_container_b_collision_2:
+            {}
+          exotica/wrc_container_b_collision_3:
+            {}
+          exotica/wrc_container_b_collision_4:
+            {}
+          exotica/wrc_frame:
+            {}
+          exotica/wrc_frame_collision_0:
+            {}
+          exotica/wrc_frame_collision_1:
+            {}
+          exotica/wrc_frame_collision_2:
+            {}
+          exotica/wrc_frame_collision_3:
+            {}
+          exotica/wrc_frame_collision_4:
+            {}
+          exotica/wrc_long_table:
+            {}
+          exotica/wrc_long_table_collision_0:
+            {}
+          exotica/wrc_long_table_collision_1:
+            {}
+          exotica/wrc_long_table_collision_10:
+            {}
+          exotica/wrc_long_table_collision_11:
+            {}
+          exotica/wrc_long_table_collision_12:
+            {}
+          exotica/wrc_long_table_collision_13:
+            {}
+          exotica/wrc_long_table_collision_14:
+            {}
+          exotica/wrc_long_table_collision_15:
+            {}
+          exotica/wrc_long_table_collision_16:
+            {}
+          exotica/wrc_long_table_collision_17:
+            {}
+          exotica/wrc_long_table_collision_18:
+            {}
+          exotica/wrc_long_table_collision_19:
+            {}
+          exotica/wrc_long_table_collision_2:
+            {}
+          exotica/wrc_long_table_collision_20:
+            {}
+          exotica/wrc_long_table_collision_21:
+            {}
+          exotica/wrc_long_table_collision_22:
+            {}
+          exotica/wrc_long_table_collision_23:
+            {}
+          exotica/wrc_long_table_collision_3:
+            {}
+          exotica/wrc_long_table_collision_4:
+            {}
+          exotica/wrc_long_table_collision_5:
+            {}
+          exotica/wrc_long_table_collision_6:
+            {}
+          exotica/wrc_long_table_collision_7:
+            {}
+          exotica/wrc_long_table_collision_8:
+            {}
+          exotica/wrc_long_table_collision_9:
+            {}
+          exotica/wrc_stair_like_drawer:
+            {}
+          exotica/wrc_stair_like_drawer_collision_0:
+            {}
+          exotica/wrc_stair_like_drawer_collision_1:
+            {}
+          exotica/wrc_stair_like_drawer_collision_10:
+            {}
+          exotica/wrc_stair_like_drawer_collision_11:
+            {}
+          exotica/wrc_stair_like_drawer_collision_12:
+            {}
+          exotica/wrc_stair_like_drawer_collision_13:
+            {}
+          exotica/wrc_stair_like_drawer_collision_14:
+            {}
+          exotica/wrc_stair_like_drawer_collision_15:
+            {}
+          exotica/wrc_stair_like_drawer_collision_16:
+            {}
+          exotica/wrc_stair_like_drawer_collision_17:
+            {}
+          exotica/wrc_stair_like_drawer_collision_18:
+            {}
+          exotica/wrc_stair_like_drawer_collision_19:
+            {}
+          exotica/wrc_stair_like_drawer_collision_2:
+            {}
+          exotica/wrc_stair_like_drawer_collision_20:
+            {}
+          exotica/wrc_stair_like_drawer_collision_21:
+            {}
+          exotica/wrc_stair_like_drawer_collision_22:
+            {}
+          exotica/wrc_stair_like_drawer_collision_3:
+            {}
+          exotica/wrc_stair_like_drawer_collision_4:
+            {}
+          exotica/wrc_stair_like_drawer_collision_5:
+            {}
+          exotica/wrc_stair_like_drawer_collision_6:
+            {}
+          exotica/wrc_stair_like_drawer_collision_7:
+            {}
+          exotica/wrc_stair_like_drawer_collision_8:
+            {}
+          exotica/wrc_stair_like_drawer_collision_9:
+            {}
+          exotica/wrc_tall_table:
+            {}
+          exotica/wrc_tall_table_collision_0:
+            {}
+          exotica/wrc_tall_table_collision_1:
+            {}
+          exotica/wrc_tall_table_collision_10:
+            {}
+          exotica/wrc_tall_table_collision_11:
+            {}
+          exotica/wrc_tall_table_collision_2:
+            {}
+          exotica/wrc_tall_table_collision_3:
+            {}
+          exotica/wrc_tall_table_collision_4:
+            {}
+          exotica/wrc_tall_table_collision_5:
+            {}
+          exotica/wrc_tall_table_collision_6:
+            {}
+          exotica/wrc_tall_table_collision_7:
+            {}
+          exotica/wrc_tall_table_collision_8:
+            {}
+          exotica/wrc_tall_table_collision_9:
+            {}
+          exotica/wrc_tray:
+            {}
+          exotica/wrc_tray_collision_0:
+            {}
+          exotica/wrc_tray_collision_1:
+            {}
+          exotica/wrc_tray_collision_2:
+            {}
+          exotica/wrc_tray_collision_3:
+            {}
+          exotica/wrc_tray_collision_4:
+            {}
+          exotica/wrc_tray_collision_5:
+            {}
+          exotica/wrc_tray_collision_6:
+            {}
+          exotica/wrc_tray_collision_7:
+            {}
+          exotica/wrc_tray_collision_8:
+            {}
+          exotica/wrc_tray_collision_9:
+            {}
+          exotica/wrist_flex_link:
+            {}
+          exotica/wrist_flex_link_collision_0:
+            {}
+          exotica/wrist_ft_sensor_frame:
+            {}
+          exotica/wrist_roll_link:
+            {}
+          exotica/wrist_roll_link_collision_0:
+            {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -298,10 +1149,7 @@ Visualization Manager:
     - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
-      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
-      X std deviation: 0.5
-      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
@@ -312,33 +1160,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.6237845420837402
+      Distance: 7.71191883
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.05999999865889549
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0.5
+        X: -0.565805197
+        Y: 0.683586478
+        Z: 1.43656242
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
+      Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.009999999776482582
-      Pitch: 0.15000000596046448
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.994796038
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5
+      Yaw: 1.58002937
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 759
+  Height: 1584
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001db0000029dfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000029d000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000029dfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d0000029d000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004b00000003efc0100000002fb0000000800540069006d00650000000000000004b0000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000002aa0000029d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000457000005d6fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006800fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000034000005d6000000e900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c000002610000000100000132000005d6fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000034000005d6000000ca00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004b00000003efc0100000002fb0000000800540069006d00650000000000000004b00000043900fffffffb0000000800540069006d0065010000000000000450000000000000000000000543000005d600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -347,6 +1195,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1440
-  X: 672
-  Y: 1524
+  Width: 2782
+  X: 98
+  Y: 36

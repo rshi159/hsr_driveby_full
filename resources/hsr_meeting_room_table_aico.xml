@@ -19,7 +19,7 @@
                 <JointGroup>arm_with_base</JointGroup>
                 <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
                 <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
-                <SRDF>{hsr_driveby_demo}/resources/hsrb.srdf</SRDF>
+                <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
                 <Links>
                     <Link Name="TargetObject"/>
                     <Link Name="BaseTarget"/>
@@ -28,8 +28,9 @@
                     <Trajectory Link="BaseTarget" File="{hsr_driveby_full}/resources/meeting_room_base_movement.traj"/>
                 </Trajectories>
                 <!-- Scene: Table, Mug -->
-                <LoadScene>{hsr_driveby_demo}/resources/meeting_room_table.scene;{hsr_driveby_demo}/resources/soda_can.scene</LoadScene>
-
+                <!-- made changes here ** -->
+                <LoadScene>{hsr_driveby_full}/resources/meeting_room_table.scene;{hsr_driveby_full}/resources/soda_can.scene</LoadScene>
+                <!-- <LoadScene>{hsr_driveby_full}/resources/meeting_room_table_other_side.scene;{hsr_driveby_full}/resources/soda_can.scene</LoadScene> -->
                 <!-- CollisionScene setup -->
                 <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
                 <!-- <RobotLinksToExcludeFromCollisionScene>torso_lift_link,base_range_sensor_link,head_pan_link,head_tilt_link,head_l_stereo_camera_link,head_r_stereo_camera_link,head_rgbd_sensor_link,base_l_drive_wheel_link,base_l_passive_wheel_z_link,base_r_drive_wheel_link,base_r_passive_wheel_z_link</RobotLinksToExcludeFromCollisionScene> -->
@@ -40,12 +41,15 @@
         <Maps>
             <EffPosition Name="Position">
                 <EndEffector>
+                    <!-- <Frame Link="hand_palm_link" LinkOffset="0 0 0.08 0.7071 0 0.7071 0"/> -->
                     <Frame Link="hand_palm_link" LinkOffset="0 0 0.08 0.7071 0 0.7071 0"/>
                 </EndEffector>
             </EffPosition>
             <EffAxisAlignment Name="AxisAlignment">
                 <EndEffector>
                     <!--<Frame Link="hand_palm_link" Axis="0 0 1"/>--><!-- LinkOffset="0 0 0 0.7071 0 0.7071 0" -->
+                    <!-- made changes here ** -->
+                    <!-- <Frame Link="hand_palm_link" Axis="0 -1 0"/> -->
                     <Frame Link="hand_palm_link" Axis="0 -1 0"/>
                 </EndEffector>
             </EffAxisAlignment>
@@ -69,8 +73,10 @@
         <Cost>
             <!-- Follow the given base trajectory in XY -->
             <Task Task="BasePosition" Rho="1e4"/>
+            <!-- <Task Task="BasePosition" Rho="0"/> -->
 
             <!-- Achieve a zero-rotation at the end of the trajectory. Rho set in Python. -->
+            <!-- made changes here ** -->
             <Task Task="BaseOrientation" Rho="0"/>
 
             <!-- Position for the end-effector during the grasping phase. Rho set in Python. -->

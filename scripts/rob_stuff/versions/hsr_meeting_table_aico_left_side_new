@@ -1,0 +1,255 @@
+#!/usr/bin/env python
+from __future__ import print_function, division
+
+from time import time, sleep
+import signal
+import numpy as np
+import matplotlib.pyplot as plt
+
+import rospy
+import pyexotica as exo
+from pyexotica.publish_trajectory import *
+
+from math import pi, sqrt, exp
+
+import hsrb_exotica_python_script
+
+do_plot = True
+traj_version = -1
+kernel_size = 15
+
+use_screenshot = False
+# ffmpeg -r 50 -f image2 -s 1920x1080 -i ./hsr_driveby_visualisation_%03d.png -vcodec libx264 -pix_fmt yuv420p ./output.mp4
+screenshot = lambda *args: None
+if use_screenshot:
+    from jsk_rviz_plugins.srv import Screenshot, ScreenshotRequest, ScreenshotResponse
+    rospy.wait_for_service('/rviz/screenshot')
+    screenshot = rospy.ServiceProxy('/rviz/screenshot', Screenshot)
+
+exo.Setup.init_ros()
+config_name = '{hsr_driveby_full}/resources/hsr_meeting_room_table_aico_left_side_new.xml'
+solver = exo.Setup.load_solver(config_name)
+problem = solver.get_problem()
+scene = problem.get_scene()
+kt = scene.get_kinematic_tree()
+joint_limits = problem.get_scene().get_kinematic_tree().get_joint_limits()
+
+# Set target for soda can
+scene.attach_object("SodaCan", "TargetObject")
+#scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06+0.04]))
+#added offset to the y coordinate since planning and simulation grasp objects have different geometry.
+# bottle on right hand side
+# <!-- made changes here ** -->
+# scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06]))#+0.04]))
+# bottle on left hand side
+# scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06]))#+0.04]))
+scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.1,0.06]))#+0.04]))
+
+# Move robot to start state
+x_start = problem.start_state
+x_start[0] = 0
+x_start[1] = 0
+x_start[2]=  0
+# x_start[2] = -np.pi/2.
+problem.start_state = x_start
+scene.set_model_state(problem.start_state)
+#scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': -1.})
+#set to move to go, assuming robot is already moving
+# <!-- made changes here ** -->
+# scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': -np.pi/2})
+scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
+problem.start_state = scene.get_model_state()
+q_start = problem.apply_start_state(True)
+q_start = np.clip(q_start, joint_limits[:,0], joint_limits[:,1])
+problem.update(q_start, 0)
+problem.start_state = scene.get_model_state()
+q_start = problem.apply_start_state(True)
+if np.any(q_start < joint_limits[:,0]) or np.any(q_start > joint_limits[:,1]):
+    raise RuntimeError("Start state exceeds joint limits!")
+
+mug_location = scene.fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
+
+# t_grasp_begin = 3.5 #4.2
+t_grasp_begin = 4.5
+t_grasp_duration = 0.5
+T_grasp_begin = int(t_grasp_begin / problem.tau)
+T_grasp_mid = int((t_grasp_begin + t_grasp_duration/2) / problem.tau)
+T_grasp_end = int((t_grasp_begin + t_grasp_duration) / problem.tau)
+
+# The target position needs to be reached during the grasping period
+problem.set_rho('Position', 0, 0)
+for t in range(T_grasp_begin, T_grasp_end):
+    problem.set_rho('Position', 1e4, t)
+    problem.set_goal('Position', mug_location[:3], t)
+
+    # The HSR has a poor reachability, so we deactivate the base tracking here
+    # problem.set_rho('BasePosition', 0, t)
+
+# Height above the table before and after grasp
+problem.set_rho('LiftOffTable', 1e2, T_grasp_begin - 10)
+# problem.set_rho('LiftOffTable', 1e3, T_grasp_end + 5)
+# problem.set_rho('LiftOffTable', 1e4, T_grasp_end + 10)
+problem.set_rho('LiftOffTable', 1e3, T_grasp_end + 10)
+# for i in range(T_grasp_begin - 20,T_grasp_begin + 20):
+#     problem.set_rho('LiftOffTable', 1e3, t)
+
+
+# The axis needs to be fixed from the beginning of the grasp to the end of the motion
+# for t in range(T_grasp_begin, problem.T):
+# for t in range(T_grasp_begin, problem.T):
+#     #problem.set_rho('AxisAlignment', 1e4, t)
+#     problem.set_rho('AxisAlignment', 1e2, t)
+
+for t in range(T_grasp_begin, T_grasp_end):
+    #problem.set_rho('AxisAlignment', 1e4, t)
+    problem.set_rho('AxisAlignment', 1e2, t)
+    problem.set_rho('IntermediateRTG', 0, t)
+    problem.set_rho('ReturnToGo', 0, t)
+
+# for t in range(T_grasp_begin, T_grasp_end):
+    # problem.set_rho('ReturnToGo', 1e1, t)
+
+for t in range(T_grasp_end+20, problem.T-20):
+    # problem.set_rho('BaseOrientation',1e3, t)
+    problem.set_rho('IntermediateRTG', 1e3, t)
+    problem.set_rho('ArmLiftZero', 1e3, -1)
+problem.set_rho('ReturnToGo', 1e3, -1)
+
+zero_motion = np.zeros((problem.T,problem.N))
+for t in range(problem.T):
+    zero_motion[t,:] = q_start
+problem.initial_trajectory = zero_motion
+
+solution = solver.solve()
+print("Solved in", solver.get_planning_time(), "final cost", problem.get_cost_evolution()[1][-1])
+# '''
+# Show convergence plot
+fig = plt.figure(1)
+plt.plot(problem.get_cost_evolution()[0], problem.get_cost_evolution()[1])
+plt.yscale('log')
+plt.ylabel('Cost')
+plt.xlabel('Time (s)')
+plt.xlim(0,np.max(problem.get_cost_evolution()[0]))
+plt.title('Convergence')
+
+# Show cost breakdown
+fig = plt.figure(2)
+# '''
+if do_plot:
+    costs = {}
+    ct = 1.0 / problem.tau / problem.T
+    for t in range(problem.T):
+        problem.update(solution[t,:],t)
+    for cost_task in problem.cost.indexing:
+        task = problem.cost.tasks[cost_task.id]
+        task_name = task.name
+        task_id = task.id
+        costs[task_name] = np.zeros((problem.T,))
+        # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
+        for t in range(problem.T):
+            ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            cost = np.dot(np.dot(ydiff, rho), ydiff)
+            costs[task_name][t] = ct * cost
+# '''
+
+if do_plot:
+    costs['Task'] = np.zeros((problem.T,))
+    costs['Transition'] = np.zeros((problem.T,))
+    for t in range(problem.T):
+        costs['Task'][t] = problem.get_scalar_task_cost(t)
+        costs['Transition'][t] = problem.get_scalar_transition_cost(t)
+    for cost in costs:
+        plt.plot(costs[cost], label=cost)
+    plt.xlim(0,problem.T)
+    plt.title('Cost breakdown across trajectory per task')
+    plt.show()
+    # plot pos, velocity, and acceleration
+# plot(solution, labels=scene.get_controlled_joint_names())
+fig = plt.figure(7)
+plt.plot(solution, label=scene.get_controlled_joint_names())
+
+def gauss(n,sigma):
+    r = range(-int(n/2),int(n/2)+1)
+    return [1 / (sigma * sqrt(2*pi)) * exp(-float(x)**2/(2*sigma**2)) for x in r]
+
+fig = plt.figure(8)
+num_rows, num_cols = solution.shape
+kernel = gauss((kernel_size-1)/2, sigma=1)
+print(kernel)
+padded = np.pad(solution,((3,3),(0,0)), 'reflect')
+smoothed_solution = np.zeros((num_rows,num_cols))
+for i in range(num_cols):
+    smoothed_solution[:,i] = np.convolve(padded[:,i], kernel, 'valid')
+plot(smoothed_solution, labels=scene.get_controlled_joint_names())
+
+def calculate_diff(pos_array, dt):
+    pos_array = np.append(pos_array, [pos_array[-1]], axis=0)
+    vel_array = np.diff(pos_array, axis = 0)/dt
+    return vel_array
+
+vel = calculate_diff(smoothed_solution, 0.1)
+acc = calculate_diff(vel, 0.1)
+plot(vel, labels=scene.get_controlled_joint_names())
+plot(acc, labels=scene.get_controlled_joint_names())
+plt.plot()
+    
+
+
+    # vel = calculate_diff(solution, 0.1)
+    # acc = calculate_diff(vel, 0.1)
+
+    # vel_limits = [1, 1, 1, 0.2, 1.2, 2.0, 1.5, 1.5]
+    # plot(vel/vel_limits, labels=scene.get_controlled_joint_names())
+
+
+    # fig = plt.figure(5)
+    # acc_limits = [0.05, 0.05, 0.5, 0.1, 0.3, 1.0, 1.0, 1.0]
+    # plot(acc/acc_limits, labels=scene.get_controlled_joint_names())
+
+# '''
+#midpoint = int(problem.T / 2)
+midpoint = int((t_grasp_begin + t_grasp_duration)/problem.tau)
+# Add a custom publish_trajectory to support attaching the Coke can...
+def publish_trajectory(traj, T, problem, once=False):
+    if len(traj) == 0:
+        print("Trajectory has zero elements")
+        raise
+    signal.signal(signal.SIGINT, sig_int_handler)
+    print('Playing back trajectory ' + str(T) + 's')
+    dt = float(T) / float(len(traj))
+    t = 0
+    grasp_times = [t_grasp_begin, t_grasp_duration]
+    print("saving trajectory")
+    np.save('example_trajectory_t'+str(traj_version),solution)
+    # hsrb_exotica_python_script.send_trajectory(solution, grasp_times, dt)
+    while True:
+        try:
+            publish_pose(traj[t], problem, float(t) * dt)
+            sleep(dt)
+
+            # Create screenshot if desired
+            if use_screenshot:
+                screenshot('/tmp/hsr_driveby_visualisation_{:03d}.png'.format(t))
+                sleep(0.1)
+                if t == len(traj) - 1:
+                    print("Screenshots created, exiting.")
+                    break
+
+            if t >= len(traj) - 1 and once:
+                return
+            t = (t + 1) % len(traj)
+            if t == midpoint:
+                scene.attach_object("SodaCan", "hand_palm_link")
+            elif t == 0:
+                scene.attach_object_local("SodaCan", "", mug_location)
+        except KeyboardInterrupt:
+            return False
+#print(np.r_[mug_location[:3],3,4,5])
+#print(problem)
+#print(type(problem))
+#print(problem.start_state)
+print(mug_location)
+# publish_trajectory(solution, problem.T*problem.tau, problem)
+publish_trajectory(smoothed_solution, problem.T*problem.tau, problem)
+

@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<PlannerDemoConfig>
+
+  <RRTConnectSolver Name="MySolver" />
+
+  <SamplingProblem Name="MyProblem">
+
+    <PlanningScene>
+      <Scene>
+        <JointGroup>base</JointGroup>
+        <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
+        <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
+        <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
+        <!-- <AlwaysUpdateCollisionScene>1</AlwaysUpdateCollisionScene> -->
+        <LoadScene>{hsr_driveby_full}/resources/soda_can.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_frame/wrc_frame.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bookshelf/wrc_bookshelf.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_black/wrc_bin_black.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_green/wrc_bin_green.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_stair_like_drawer/wrc_stair_like_drawer.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tall_table/wrc_tall_table.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/wrc_long_table.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/wrc_long_table_0.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/wrc_tray_1.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/wrc_tray_2.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_a/wrc_container_a.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_b/wrc_container_b.scene
+        </LoadScene>
+        <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
+      </Scene>
+    </PlanningScene>
+
+     <Maps>
+      <CollisionCheck Name="Collision" SelfCollision="1" />
+    </Maps>
+
+    <Equality>
+      <Task Task="Collision"/>
+    </Equality>
+
+    <!-- <Goal>1 -2 0</Goal> -->
+    <FloatingBaseLowerLimits>-10 -10 -3.1415</FloatingBaseLowerLimits>
+    <FloatingBaseUpperLimits> 10  10 3.1415</FloatingBaseUpperLimits>
+  </SamplingProblem>
+
+</PlannerDemoConfig>

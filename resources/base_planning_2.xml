@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<PlannerDemoConfig>
+
+  <RRTConnectSolver Name="MySolver" />
+
+  <SamplingProblem Name="MyProblem">
+
+    <PlanningScene>
+      <Scene>
+        <JointGroup>base</JointGroup>
+        <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
+        <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
+        <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
+        <!-- <AlwaysUpdateCollisionScene>1</AlwaysUpdateCollisionScene> -->
+        <LoadScene>{hsr_driveby_full}/resources/meeting_room_table.scene</LoadScene>
+        <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
+      </Scene>
+    </PlanningScene>
+
+     <Maps>
+      <CollisionCheck Name="Collision" SelfCollision="1" />
+    </Maps>
+
+    <Equality>
+      <Task Task="Collision"/>
+    </Equality>
+
+    <Goal>1 -2 0</Goal>
+    <FloatingBaseLowerLimits>-10 -10 0</FloatingBaseLowerLimits>
+    <FloatingBaseUpperLimits> 10  10 3.1415</FloatingBaseUpperLimits>
+  </SamplingProblem>
+
+</PlannerDemoConfig>

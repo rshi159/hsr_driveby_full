@@ -20,6 +20,7 @@ import sys
 
 import my_arm_client as arm
 import my_base_client as base
+import hsr_meeting_table_aico_whole as planner
 # import my_gripper_client as gripper
 
 def setup():
@@ -146,7 +147,7 @@ def send_trajectory(received_traj,grasp_times, dt):
     start_state = exo.KDLFrame(start_pos + start_quat)
     x,y,z,roll,pitch,yaw = start_state.get_translation_and_rpy()
     print(yaw)
-    omni_base.go_abs(x,y,yaw,1000.0)
+    # omni_base.go_abs(x,y,yaw,1000.0)
     whole_body.move_to_go()
     # exit()
     '''takes input of trajectory from hsr_meeting_table_aico, [grasp_start, grasp_duration]
@@ -154,6 +155,7 @@ def send_trajectory(received_traj,grasp_times, dt):
     '''
     #default dt = 0.1. set to >0.1 for testing / velocity limits exceeded
     dt = 0.15
+    # dt = 0.10
     print("received")
     print(np.shape(received_traj))
     # midpoint = grasp_times[1]/2
@@ -219,6 +221,8 @@ def send_trajectory(received_traj,grasp_times, dt):
     exit()
 
 if __name__ == '__main__':
-    soln = np.load('example_traj/example_trajectory_t99.npy', allow_pickle = False)
+    # soln = np.load('plotting/example_traj/example_trajectory_t99.npy', allow_pickle = False)
+    soln = planner.start_aico()
     send_trajectory(soln,[4.5, 0.0], 0.1)
+
 

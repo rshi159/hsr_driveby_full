@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''
-keeps track of pose of bottle and table relative to map frame.
+keeps track of pose of bottle and table relative to map frame. testing file
+to get familar with topics and subscribers using Python
 '''
 import rospy
 import numpy as np

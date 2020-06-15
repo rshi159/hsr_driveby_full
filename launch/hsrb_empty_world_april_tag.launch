@@ -66,4 +66,7 @@
     <param name="camera_frame" type="str" value="$(arg camera_frame)" />
     <param name="publish_tag_detections_image" type="bool" value="true" />      <!-- default: false -->
   </node>
+  <node pkg="hsr_driveby_full" type="object_positions.py" name="object_positions" output="screen"></node>
+  <node pkg="hsr_driveby_full" type="trajectory_start_end.py" name="trajectory_start_point" output="screen"></node>
+
 </launch>

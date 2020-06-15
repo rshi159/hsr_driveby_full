@@ -78,9 +78,9 @@ while not rospy.is_shutdown():
         # only accept possible positions if pitch and roll fall beneath arbitrary threshold.
         # if abs(start_r) < 0.01 and abs(start_p) < 0.01:
         if abs(start_r) < 0.01 and abs(start_p) < 0.01:
-            print(start_pose_map.get_rpy())
+            # print(start_pose_map.get_rpy())
             publish(start_pose_map, 'my_start_pos', 'map')
         
     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-        print "no tf published"
+        pass
     rate.sleep()

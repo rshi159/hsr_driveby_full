@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!-- based on hsr_driveby_tirrtconnect_nyboda.xml -->
+<PlannerDemoConfig>
+    <TimeIndexedRRTConnectSolver Name="MySolver">
+        <Timeout>5</Timeout>
+        <AddTimeIntoSolution>1</AddTimeIntoSolution>
+        <TrajectoryPointsPerSecond>60</TrajectoryPointsPerSecond><!-- We will match this in the optimisation-based planner -->
+    </TimeIndexedRRTConnectSolver>
+
+    <TimeIndexedSamplingProblem Name="MyProblem">
+        <GoalTime>10</GoalTime><!-- Set initially, we will modify this later in Python for each of the sub-problems -->
+        <PlanningScene>
+            <Scene>
+                <!-- <JointGroup>arm</JointGroup> -->
+                <!-- <JointGroup>arm_with_base</JointGroup> -->
+                <JointGroup>base</JointGroup>
+                <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
+                <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
+                <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
+                <Trajectories>
+                    <!-- <Trajectory Link="base_footprint" File="{hsr_driveby_demo}/resources/base_movement.traj"/> -->
+                </Trajectories>
+                <!-- Scene: Table, Mug -->
+                <LoadScene>{hsr_driveby_full}/resources/meeting_room_table.scene</LoadScene>]
+                
+                <!-- CollisionScene setup -->
+                <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
+            </Scene>
+        </PlanningScene>
+
+        <Maps>
+            <CollisionCheck Name="Collision" SelfCollision="1"/>
+        </Maps>
+
+        <Equality>
+            <Task Task="Collision"/>
+        </Equality>
+
+        <JointVelocityLimits>0.2</JointVelocityLimits>
+        <FloatingBaseLowerLimits>-10 -10 -3.1415</FloatingBaseLowerLimits>
+        <FloatingBaseUpperLimits> 10  10 3.1415</FloatingBaseUpperLimits>
+    </TimeIndexedSamplingProblem>
+</PlannerDemoConfig>

@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+from __future__ import print_function, division
+
+from time import time, sleep
+import math
+import signal
+import numpy as np
+
+import rospy
+import pyexotica as exo
+from pyexotica.publish_trajectory import *
+from pyexotica.tools import *
+
+
+from pyexotica.publish_trajectory import sig_int_handler
+
+np.random.seed(1)
+
+use_screenshot = False
+# ffmpeg -r 50 -f image2 -s 1920x1080 -i ./hsr_driveby_visualisation_%03d.png -vcodec libx264 -pix_fmt yuv420p ./output.mp4
+screenshot = lambda *args: None
+if use_screenshot:
+    from jsk_rviz_plugins.srv import Screenshot, ScreenshotRequest, ScreenshotResponse
+    rospy.wait_for_service('/rviz/screenshot')
+    screenshot = rospy.ServiceProxy('/rviz/screenshot', Screenshot)
+
+class DrivebyPickAndPlaceDemo(object):
+    def __init__(self, debug=False, constrained_ik=False):
+        # self.debug = debug          # Debug mode
+        # self.constrained_ik = constrained_ik
+        # self.t_total = 10.          # Total duration = 10s
+        # self.t_begin_grasp = 4.     # Start of grasp
+        # self.t_grasp_duration = 2.  # Time of the grasp phase
+        # self.dt = 1/60.             # Sampling rate of the trajectory
+
+        # Load solvers
+        self.ompl_solver = exo.Setup.load_solver(
+            '{hsr_driveby_full}/resources/create_base_traj.xml')
+        self.ompl_problem = self.ompl_solver.get_problem()
+
+    def solve_rrtconnect(self, start, goal):
+        self.ompl_problem.goal_state = goal
+        # print(self.ompl_problem.get_tasks())
+        # print(type(self.ompl_problem))
+        # print(type(self.ompl_solver))
+        scene = self.ompl_problem.get_scene()
+        # x_start[2] = -np.pi/2.
+        self.ompl_problem.start_state = start
+        scene.set_model_state(planner.ompl_problem.start_state)
+        solution = self.ompl_solver.solve()
+        return solution
+
+if __name__ == "__main__":
+    exo.Setup.init_ros()
+
+    planner = DrivebyPickAndPlaceDemo(debug=True)  
+    # Move robot to start state
+    # create a .traj file
+    def to_traj_file(soln, filename):
+        import sys
+        import os
+
+        rows, cols = soln.shape
+        # remove additional columns
+        if cols > 4:
+            soln = soln[:,cols-3:cols]
+            print("trimmed the columns")
+        
+        traj_file = os.path.abspath(filename)
+        # write to .traj file
+        traj_file = open(filename, "w")
+        traj_file.write("1\n")
+        traj_file.write("%d %d\n" %(rows, cols))
+        for i in range(rows):
+            traj_file.write("%f %f %f %f\n" %(soln[i,0], soln[i,1], soln[i,2], soln[i,3]))
+        traj_file.close()
+
+    def correct_vel(soln, dt):
+        print(soln.shape)
+        vel_xy_upper = 0.3
+        vel_xy_lower = 0.2
+        row, col = soln.shape
+        diff = np.diff(soln, axis=0)
+        vel =  diff / dt
+        print(vel)
+        print(np.arange(row-1,0,-1))
+        for i in np.arange(row-2,0,-1):
+            print(i)
+            print(vel[i,0])
+            print(vel[i,1])
+            if abs(vel[i,0]) > vel_xy_upper or abs(vel[i,1]) > vel_xy_upper:
+                soln = np.insert(soln,i+1, (soln[i+1,:]-soln[i,:])/2 + soln[i,:], axis = 0)
+                print("high vel")
+            # if vel[i,0] < vel_xy_upper or vel[i,1] < vel_xy_upper:
+            #     soln = np.delete(soln, (i), axis = 0)
+        print(soln.shape)
+        return soln
+        
+    
+    # use rrtconnect to find a valid base trajectory that approaches the object
+    goal = [-0.86,0.5,-1.57]
+    start = [-2.1, 1.2, -1.57]
+    # goal = [0,0,0]
+    solution_approach = planner.solve_rrtconnect(start, goal)
+    # print(solution_approach)
+
+    planner2 = DrivebyPickAndPlaceDemo(debug=True)
+    goal2 = [-0.86,-1.2,-1.57]
+    start2 = [-0.86,0.5,-1.57]
+    solution_approach2 = planner2.solve_rrtconnect(start2, goal2)
+    # print(solution_approach2)
+    solution_approach2= np.delete(solution_approach2,0,axis=0)
+    whole_solution = np.concatenate((solution_approach,solution_approach2))
+    print(whole_solution)
+    plot(whole_solution)
+
+    whole_solution = correct_vel(whole_solution, 0.5)
+    whole_solution = correct_vel(whole_solution, 0.5)
+    whole_solution = correct_vel(whole_solution, 0.5)
+
+    row, col = whole_solution.shape
+    time_arr = np.arange(row) * 0.5
+    solution = np.insert(whole_solution,0, time_arr, axis=1)
+    print(solution)
+    publish_trajectory(whole_solution, 10.0, planner.ompl_solver.get_problem())
+    print("to traj file")
+    # output base trajectory to traj file.
+    to_traj_file(solution, "base_trajectory/base_trajectory_file.traj")
+    print("sent to traj file. look for it now")
+    publish_trajectory(solution_approach[:,1:4], planner.t_total, planner.ompl_problem)

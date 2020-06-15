@@ -106,7 +106,8 @@ def callback(data):
 
             broadcaster.sendTransform(static_transformStamped)
     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-        print("nothing detected")
+        if debug:
+            print("nothing detected")
         pass
 
 

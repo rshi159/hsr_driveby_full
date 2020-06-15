@@ -40,10 +40,10 @@ if __name__ == '__main__':
         # acceleration limits
         normalize = [0.1, 0.3, 1.0, 1.0, 1.0]
         # arm_traj = soln[:,3:8]
-        arm_traj = soln
+        arm_traj = soln[:,3:8]
     time_list = np.arange(0.0,dt*len(soln),dt)
-    # vel_array = calculate_diff(arm_traj, dt)
-    vel_array = soln
+    vel_array = calculate_diff(arm_traj, dt)
+    # vel_array = soln
     print(vel_array)
     acc_array = calculate_diff(vel_array, dt)/normalize
     print(vel_array[:,1])

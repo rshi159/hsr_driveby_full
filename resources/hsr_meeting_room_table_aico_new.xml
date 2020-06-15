@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<PlannerDemoConfig>
+    <AICOSolver Name="MySolver">
+        <Debug>1</Debug>
+        <MaxIterations>500</MaxIterations>
+        <MaxBacktrackIterations>50</MaxBacktrackIterations>
+        <FunctionTolerance>1e-5</FunctionTolerance>
+        <Damping>0.001</Damping>
+    </AICOSolver>
+    <!-- <SnoptTimeIndexedUnconstrainedSolver Name="MySolver">
+        <MaxIterations>1000</MaxIterations>
+        <Summary>1</Summary>
+    </SnoptTimeIndexedUnconstrainedSolver> -->
+
+    <UnconstrainedTimeIndexedProblem Name="MyProblem">
+        <PlanningScene>
+            <Scene>
+                <!-- <Debug>1</Debug> -->
+                <JointGroup>arm_with_base</JointGroup>
+                <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
+                <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
+                <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
+                <Links>
+                    <Link Name="TargetObject"/>
+                    <Link Name="BaseTarget"/>
+                </Links>
+                <Trajectories>
+                    <Trajectory Link="BaseTarget" File="{hsr_driveby_full}/resources/meeting_room_base_movement.traj"/>
+                </Trajectories>
+                <!-- Scene: Table, Mug -->
+                <!-- made changes here ** -->
+                <LoadScene>{hsr_driveby_full}/resources/meeting_room_table.scene;{hsr_driveby_full}/resources/soda_can.scene</LoadScene>
+                <!-- <LoadScene>{hsr_driveby_full}/resources/meeting_room_table_other_side.scene;{hsr_driveby_full}/resources/soda_can.scene</LoadScene> -->
+                <!-- CollisionScene setup -->
+                <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
+                <!-- <RobotLinksToExcludeFromCollisionScene>torso_lift_link,base_range_sensor_link,head_pan_link,head_tilt_link,head_l_stereo_camera_link,head_r_stereo_camera_link,head_rgbd_sensor_link,base_l_drive_wheel_link,base_l_passive_wheel_z_link,base_r_drive_wheel_link,base_r_passive_wheel_z_link</RobotLinksToExcludeFromCollisionScene> -->
+                <!-- <WorldLinksToExcludeFromCollisionScene>SodaCan,SodaCan_collision_0</WorldLinksToExcludeFromCollisionScene> -->
+            </Scene>
+        </PlanningScene>
+
+        <Maps>
+            <EffPosition Name="Position">
+                <EndEffector>
+                    <!-- <Frame Link="hand_palm_link" LinkOffset="0 0 0.08 0.7071 0 0.7071 0"/> -->
+                    <Frame Link="hand_palm_link" LinkOffset="0 0 0.08 0.7071 0 0.7071 0"/>
+                </EndEffector>
+            </EffPosition>
+            <EffAxisAlignment Name="AxisAlignment">
+                <EndEffector>
+                    <!--<Frame Link="hand_palm_link" Axis="0 0 1"/>--><!-- LinkOffset="0 0 0 0.7071 0 0.7071 0" -->
+                    <!-- made changes here ** -->
+                    <!-- <Frame Link="hand_palm_link" Axis="0 -1 0"/> -->
+                    <Frame Link="hand_palm_link" Axis="0 -1 0"/>
+                </EndEffector>
+            </EffAxisAlignment>
+            <JointLimit Name="JL" SafePercentage="0.0"/>
+            <SmoothCollisionDistance Name="SCD" CheckSelfCollision="0" WorldMargin="0.03" RobotMargin="0.01"/>
+            <SumOfPenetrations Name="SumOfPenetrations" CheckSelfCollision="0" WorldMargin="0.03" RobotMargin="0.01"/>
+            <PointToPlane Name="LiftOffTable">
+                <EndEffector>
+                    <Frame Link="hand_palm_link" Base="Table"/>
+                </EndEffector>
+            </PointToPlane>
+            <EffPositionXY Name="BasePosition">
+                <EndEffector>
+                    <Frame Link="base_footprint" Base="BaseTarget"/>
+                </EndEffector>
+            </EffPositionXY>
+            <JointPose Name="BaseOrientation" JointMap="2" JointRef="0"/>
+            <!-- <JointPose Name="ReturnToGo" JointMap="4 5 6 7" JointRef="0 -1.570796 -1.570796 0"/> -->
+            <JointPose Name="ReturnToGo" JointMap="4 5" JointRef="0 -1.570796"/>
+            <!-- <JointPose Name="RestPosition" JointMap="4 5 6 7" JointRef="0 0 -1.57 0"/> -->
+        </Maps>
+
+        <Cost>
+            <!-- Follow the given base trajectory in XY -->
+            <Task Task="BasePosition" Rho="1e4"/>
+            <!-- <Task Task="BasePosition" Rho="0"/> -->
+
+            <!-- Achieve a zero-rotation at the end of the trajectory. Rho set in Python. -->
+            <!-- made changes here ** -->
+            <Task Task="BaseOrientation" Rho="0"/>
+
+            <!-- Position for the end-effector during the grasping phase. Rho set in Python. -->
+            <Task Task="Position" Rho="0"/>
+
+            <!-- Alignment of the end-effector during/after the grasphing phase. Rho set in Python. -->
+            <Task Task="AxisAlignment" Rho="0"/>
+
+            <!-- Penalise joint limit violation. Active during the entire task. -->
+            <Task Task="JL" Rho="1e3"/>
+            
+            <!-- made changes here ** -->
+            <!-- Return arm_roll_joint to Go Position after grasping object -->
+            <Task Task="ReturnToGo" Rho="0"/>
+
+            <!-- Collision avoidance -->
+            <!--<Task Task="SCD" Rho="1e1"/> -->
+            <!-- <Task Task="SumOfPenetrations" Rho="1e2"/> -->
+            
+            <!-- Experimental costs, now removed -->
+            <!-- <Task Task="RestPosition"/> -->
+            <!--<Task Task="LiftOffTable" Rho="0" Goal="0.05"/>-->
+            <!--<Task Task="LiftOffTable" Rho="0" Goal="0.15"/>-->
+            <Task Task="LiftOffTable" Rho="0" Goal="0.1"/>
+            <!-- <Task Task="JointPose" Rho="0"/> -->
+        </Cost>
+
+        <!-- Trajectory of 10s at tau=50Hz => T=500 waypoints -->
+        <!-- <T>500</T>
+        <tau>0.02</tau> -->
+        <T>100</T>
+        <tau>0.1</tau>
+        <Wrate>1e2</Wrate>
+        <!-- <W>5 5 5 5 4 3 2 1</W> -->
+        <W>10 10 1 10 3.33 1 1 1</W>
+    </UnconstrainedTimeIndexedProblem>
+</PlannerDemoConfig>

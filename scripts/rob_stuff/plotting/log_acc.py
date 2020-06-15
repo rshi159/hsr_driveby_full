@@ -18,7 +18,8 @@ names_2 = np.array([])
 
 # ==========USER INPUTS===========
 # number of datapoints to read in. 100 * dt * 10
-steps = 150
+# steps = 150
+steps = 100
 # plot position or velocity
 plot_positions = False
 # normalize
@@ -147,12 +148,6 @@ if __name__ == '__main__':
     ax1.legend(names_2, loc = "best")
     # ax1.set_ylim((-1, 1))
 
-    ax5 = plt.subplot(234)
-    plt.title("/hsrb/robot_states/joint_state")
-    plt.plot(x3[:steps-1], joint_traj[:steps-1], linewidth = 2)
-    ax5.grid(True, linestyle='-.')
-    ax5.legend(names, loc = "best")
-    ax5.set_xlim([0, x3[-1]])
 
     ax2 = plt.subplot(233)#,sharex=ax2, sharey=ax2)
     plt.title("/hsrb/joint_states diffed/dt (50hz) Normalized")
@@ -163,7 +158,6 @@ if __name__ == '__main__':
     else:
         plt.plot(x2[1:-11], acc.transpose(), linewidth = 2)
     # plt.plot(x2[1:-11], diffed, linewidth = 2)
-
     ax2.set_xlim([0, x2[-11]])
     ax2.grid(True, linestyle='-.')
     if normalize_array:
@@ -171,25 +165,52 @@ if __name__ == '__main__':
     else:
         ax2.legend(names, loc = "best")
 
+
+    # ax7 = plt.subplot(232)#,sharex=ax2, sharey=ax2)
+    # plt.title("/hsrb/joint_states diffed")
+    # if normalize:
+    #     plt.plot(x2[1:-11], diffed, linewidth = 2)
+    # else:
+    #     plt.plot(x2[1:-11], diffed, linewidth = 2)
+    # ax7.set_xlim([0, x2[-11]])
+    # ax7.grid(True, linestyle='-.')
+    # if normalize_array:
+    #     ax7.legend(normalize_array, loc="best")
+    # else:
+    #     ax7.legend(names, loc = "best")
+    # ax7.set_xlim([0, x2[-11]])
+    # ax7.grid(True, linestyle='-.')
+    # if normalize_array:
+    #     ax7.legend(names, loc="best")
+    # else:
+    #     ax7.legend(names, loc = "best")
     ax7 = plt.subplot(232)#,sharex=ax2, sharey=ax2)
-    plt.title("/hsrb/joint_states diffed")
+    plt.title("/hsrb/joint_states diffed/dt")
     if normalize:
-        plt.plot(x2[1:-11], diffed, linewidth = 2)
+        plt.plot(x2[1:-11], acc.transpose(), linewidth = 2)
     else:
-        plt.plot(x2[1:-11], diffed, linewidth = 2)
+        plt.plot(x2[1:-11], acc.transpose(), linewidth = 2)
     ax7.set_xlim([0, x2[-11]])
     ax7.grid(True, linestyle='-.')
     if normalize_array:
         ax7.legend(normalize_array, loc="best")
     else:
         ax7.legend(names, loc = "best")
-
     ax7.set_xlim([0, x2[-11]])
     ax7.grid(True, linestyle='-.')
     if normalize_array:
         ax7.legend(names, loc="best")
     else:
         ax7.legend(names, loc = "best")
+
+
+    ax5 = plt.subplot(234)
+    plt.title("/hsrb/robot_states/joint_state")
+    plt.plot(x3[:steps-1], joint_traj[:steps-1], linewidth = 2)
+    ax5.grid(True, linestyle='-.')
+    ax5.legend(names, loc = "best")
+    ax5.set_xlim([0, x3[-1]])
+
 
 
     ax3 = plt.subplot(236)
@@ -210,12 +231,25 @@ if __name__ == '__main__':
         ax3.legend(names, loc = "best")
     ax3.set_xlim([0, x3[-1]])
 
+    # ax9 = plt.subplot(235)
+    # plt.title("/hsrb/robot_states/joint_state diffed")
+    # if normalize:
+    #     plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
+    # else:
+    #     plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
+    # # plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
+    # ax9.grid(True, linestyle='-.')
+    # if normalize_array:
+    #     ax9.legend(names, loc="best")
+    # else:
+    #     ax9.legend(names, loc = "best")
+    # ax9.set_xlim([0, x3[-1]])
     ax9 = plt.subplot(235)
-    plt.title("/hsrb/robot_states/joint_state diffed")
+    plt.title("/hsrb/robot_states/joint_state diffed/dt")
     if normalize:
-        plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
+        plt.plot(x3[1:steps-1], acc_2.transpose(), linewidth = 2)
     else:
-        plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
+        plt.plot(x3[1:steps-1], acc_2.transpose(), linewidth = 2)
     # plt.plot(x3[1:steps-1], diffed_2, linewidth = 2)
     ax9.grid(True, linestyle='-.')
     if normalize_array:

@@ -12,6 +12,7 @@ from pyexotica.publish_trajectory import *
 
 import hsrb_exotica_python_script
 
+do_plot = ~False
 traj_version = -1
 
 use_screenshot = False
@@ -34,6 +35,10 @@ joint_limits = problem.get_scene().get_kinematic_tree().get_joint_limits()
 scene.attach_object("SodaCan", "TargetObject")
 #scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06+0.04]))
 #added offset to the y coordinate since planning and simulation grasp objects have different geometry.
+# bottle on right hand side
+# <!-- made changes here ** -->
+# scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06]))#+0.04]))
+# bottle on left hand side
 scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.30,0.06]))#+0.04]))
 
 # Move robot to start state
@@ -46,7 +51,9 @@ problem.start_state = x_start
 scene.set_model_state(problem.start_state)
 #scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': -1.})
 #set to move to go, assuming robot is already moving
-scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': -np.pi/2})
+# <!-- made changes here ** -->
+# scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': -np.pi/2})
+scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
 problem.start_state = scene.get_model_state()
 q_start = problem.apply_start_state(True)
 q_start = np.clip(q_start, joint_limits[:,0], joint_limits[:,1])
@@ -85,7 +92,7 @@ for t in range(T_grasp_begin, problem.T):
     #problem.set_rho('AxisAlignment', 1e4, t)
     problem.set_rho('AxisAlignment', 1e2, t)
 
-#problem.set_rho('BaseOrientation', 1e2, -1)
+problem.set_rho('BaseOrientation', 1e2, -1)
 
 # Initial trajectory = zero motion
 zero_motion = np.zeros((problem.T,problem.N))
@@ -95,7 +102,7 @@ problem.initial_trajectory = zero_motion
 
 solution = solver.solve()
 print("Solved in", solver.get_planning_time(), "final cost", problem.get_cost_evolution()[1][-1])
-'''
+# '''
 # Show convergence plot
 fig = plt.figure(1)
 plt.plot(problem.get_cost_evolution()[0], problem.get_cost_evolution()[1])
@@ -107,36 +114,38 @@ plt.title('Convergence')
 
 # Show cost breakdown
 fig = plt.figure(2)
-'''
-costs = {}
-ct = 1.0 / problem.tau / problem.T
-for t in range(problem.T):
-    problem.update(solution[t,:],t)
-for cost_task in problem.cost.indexing:
-    task = problem.cost.tasks[cost_task.id]
-    task_name = task.name
-    task_id = task.id
-    costs[task_name] = np.zeros((problem.T,))
-    # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
+# '''
+if do_plot:
+    costs = {}
+    ct = 1.0 / problem.tau / problem.T
     for t in range(problem.T):
-        ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
-        rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
-        cost = np.dot(np.dot(ydiff, rho), ydiff)
-        costs[task_name][t] = ct * cost
-'''
-costs['Task'] = np.zeros((problem.T,))
-costs['Transition'] = np.zeros((problem.T,))
-for t in range(problem.T):
-    costs['Task'][t] = problem.get_scalar_task_cost(t)
-    costs['Transition'][t] = problem.get_scalar_transition_cost(t)
-for cost in costs:
-    plt.plot(costs[cost], label=cost)
-plt.legend()
-plt.xlim(0,problem.T)
-plt.title('Cost breakdown across trajectory per task')
-plt.show()
-plot(solution, labels=scene.get_controlled_joint_names())
-'''
+        problem.update(solution[t,:],t)
+    for cost_task in problem.cost.indexing:
+        task = problem.cost.tasks[cost_task.id]
+        task_name = task.name
+        task_id = task.id
+        costs[task_name] = np.zeros((problem.T,))
+        # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
+        for t in range(problem.T):
+            ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            cost = np.dot(np.dot(ydiff, rho), ydiff)
+            costs[task_name][t] = ct * cost
+# '''
+if do_plot:
+    costs['Task'] = np.zeros((problem.T,))
+    costs['Transition'] = np.zeros((problem.T,))
+    for t in range(problem.T):
+        costs['Task'][t] = problem.get_scalar_task_cost(t)
+        costs['Transition'][t] = problem.get_scalar_transition_cost(t)
+    for cost in costs:
+        plt.plot(costs[cost], label=cost)
+    plt.legend()
+    plt.xlim(0,problem.T)
+    plt.title('Cost breakdown across trajectory per task')
+    plt.show()
+    plot(solution, labels=scene.get_controlled_joint_names())
+# '''
 #midpoint = int(problem.T / 2)
 midpoint = int((t_grasp_begin + t_grasp_duration)/problem.tau)
 # Add a custom publish_trajectory to support attaching the Coke can...

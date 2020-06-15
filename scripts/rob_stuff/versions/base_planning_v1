@@ -1,0 +1,328 @@
+#!/usr/bin/env python
+from __future__ import print_function, division
+
+from time import time, sleep
+import math
+import signal
+import numpy as np
+
+import rospy
+import pyexotica as exo
+from pyexotica.publish_trajectory import *
+from pyexotica.tools import *
+
+
+from pyexotica.publish_trajectory import sig_int_handler
+
+np.random.seed(1)
+
+use_screenshot = False
+# ffmpeg -r 50 -f image2 -s 1920x1080 -i ./hsr_driveby_visualisation_%03d.png -vcodec libx264 -pix_fmt yuv420p ./output.mp4
+screenshot = lambda *args: None
+if use_screenshot:
+    from jsk_rviz_plugins.srv import Screenshot, ScreenshotRequest, ScreenshotResponse
+    rospy.wait_for_service('/rviz/screenshot')
+    screenshot = rospy.ServiceProxy('/rviz/screenshot', Screenshot)
+
+
+# NB: We are treating the problem as a multi-phase problem:
+#  1) Approach: Solved with Time-Indexed RRT-Connect
+#  2) Grasp: Solved with IK / AICO as an optimisation problem
+#  3) Return: Solved with Time-Indexed RRT-Connect
+#
+# The solution can later be used as an initial seed to a full optimisation problem.
+# 
+class DrivebyPickAndPlaceDemo(object):
+    def __init__(self, debug=False, constrained_ik=False):
+        self.debug = debug          # Debug mode
+        self.constrained_ik = constrained_ik
+        self.t_total = 10.          # Total duration = 10s
+        self.t_begin_grasp = 4.     # Start of grasp
+        self.t_grasp_duration = 2.  # Time of the grasp phase
+        self.dt = 1/60.             # Sampling rate of the trajectory
+
+        # Load solvers
+        # self.ompl_solver = exo.Setup.load_solver('{hsr_driveby_full}/resources/base_planning.xml')
+        self.ompl_solver = exo.Setup.load_solver(
+    '{hsr_driveby_full}/resources/base_planning_2.xml')
+        self.ompl_problem = self.ompl_solver.get_problem()
+        
+        
+        # self.opt_solver = exo.Setup.load_solver('{hsr_driveby_demo}/resources/hsr_driveby_planning_nyboda.xml')
+        # self.opt_problem = self.opt_solver.get_problem()
+        # if self.constrained_ik:
+        #     self.ik_solver = exo.Setup.load_solver('{hsr_driveby_demo}/resources/hsr_constrained_ik.xml')
+        # else:
+        #     self.ik_solver = exo.Setup.load_solver('{hsr_driveby_demo}/resources/hsr_ik.xml')
+        # self.ik_problem = self.ik_solver.get_problem()
+    
+        # Define start state
+        # start_state = self.opt_problem.start_state
+        # start_state[0] = 0.
+        # start_state[1] = 0.
+        # self.opt_problem.start_state = start_state
+        # self.opt_problem.get_scene().set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.6, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.6, 'hand_r_distal_joint': -0.6})
+        # self.start_state = self.opt_problem.get_scene().get_model_state()
+        # self.q_start = self.opt_problem.apply_start_state(True)
+
+        # Load soda can / mug (here as cylinder)
+        # scene = self.opt_problem.get_scene()
+        # scene.add_object_to_environment(name="SodaCan", color=(1., 0., 0., 1.), shape=exo.Cylinder(0.045,0.12), transform=exo.KDLFrame([0, 0, 0]))
+        # scene.attach_object("SodaCan", "TargetObject")
+        # scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.,0.1,0.06+0.02]))
+        # self.opt_problem.apply_start_state(True)
+        # self.target_object_location = scene.fk("TargetObject", exo.KDLFrame(), '', exo.KDLFrame()).get_translation()
+
+    def clamp_state_to_within_joint_bounds(self, q):
+        joint_limits = self.opt_problem.get_scene().get_kinematic_tree().get_joint_limits()
+        return np.clip(q, joint_limits[:,0], joint_limits[:,1])
+
+    def solve_ik(self, pos_target, start_time=0.0, base_position_rho=0, q_guess=None):
+        self.ik_problem.start_time = start_time
+
+        number_of_restarts = 50
+        is_valid = False
+        number_of_attempts = 0
+        q = np.zeros(self.ik_problem.N,)
+        self.ik_problem.set_rho('BasePosition', base_position_rho)
+        while not is_valid and number_of_attempts < number_of_restarts:
+            q_rand = np.random.rand(self.ik_problem.N,)
+            if number_of_attempts == 0 and q_guess is not None:
+                q_rand = q_guess
+            self.ik_problem.update(q_rand)
+            self.ik_problem.start_state = self.ik_problem.get_scene().get_model_state()
+            if self.constrained_ik:
+                self.ik_problem.set_goal_eq('Position', pos_target)
+            else:
+                self.ik_problem.set_goal('Position', pos_target)
+            q = self.ik_solver.solve()[0]
+            final_cost = self.ik_problem.get_cost_evolution()[1][-1]
+            is_valid = self.ik_problem.is_valid() and self.ik_problem.get_scene().is_state_valid()
+            # Check the individual task maps for unconstrained IK
+            if not self.constrained_ik:
+                task_acceptance_thresholds = {
+                    'Position': np.array([0.005, 0.005, 0.02]),  # 5mm in x,y, 2cm in z
+                    'SCD': np.array([0.005]),
+                    'AxisAlignment': np.abs(np.array([math.cos(math.radians(5.))-1.])),  # 5 degrees
+                    'JL': np.array([0.001] * self.ik_problem.N),  # Joint limits
+                }
+                task_maps_valid = True
+                for task_name in task_acceptance_thresholds:
+                    task = self.ik_problem.get_task_maps()[task_name]
+                    ydiff = np.abs(self.ik_problem.cost.ydiff[task.start:task.start+task.length])
+                    if np.all(ydiff < task_acceptance_thresholds[task_name]):
+                        False and print(task_name, "is valid")
+                    else:
+                        # self.debug and print("> diff", task_name, ydiff, task_acceptance_thresholds[task_name])
+                        task_maps_valid = False
+                is_valid = is_valid and task_maps_valid
+
+            if self.debug:
+                print("[IK] Solved in", self.ik_solver.get_planning_time(), "Final cost:", final_cost, "Valid?", is_valid)
+
+                # if not self.constrained_ik:
+                #     for task_name in self.ik_problem.get_task_maps():
+                #         task = self.ik_problem.get_task_maps()[task_name]
+                #         print(task_name + ":", self.ik_problem.cost.ydiff[task.start:task.start+task.length])
+                # else:
+                #     print("eq-ydiff", self.ik_problem.equality.ydiff)
+
+            publish_pose(q, self.ik_problem, t=start_time)
+            number_of_attempts += 1
+        if not is_valid:
+            raise RuntimeWarning("Could not find a valid IK configuration")
+        return q
+    
+    def solve_tirrtconnect(self, q_start, q_goal, t_start, t_goal):
+        self.ompl_problem.update(q_start, t_start)
+        # If the start state is invalid, let's visualise it and get a list of the colliding links:
+        if not self.ompl_problem.get_scene().is_state_valid():
+            self.ompl_problem.get_scene().get_kinematic_tree().publish_frames()
+            get_colliding_links(self.ompl_problem.get_scene())
+            raise RuntimeError("Start states is not collision-free")
+        self.ompl_problem.start_time = t_start
+        # self.ompl_problem.goal_time = t_goal
+        self.ompl_problem.start_state = self.ompl_problem.get_scene().get_model_state()
+        self.ompl_problem.goal_state = q_goal
+
+        solution = self.ompl_solver.solve()
+        self.debug and print("[OMPL] Solved in", self.ompl_solver.get_planning_time())
+
+        return solution
+    
+    def solve_rrtconnect(self):
+        # scene = self.ompl_problem.get_scene
+        # x_start = self.ompl_problem.start_state
+        # x_start[0] = 0
+        # x_start[1] = 0
+        # x_start[2]=  0
+        # self.ompl_problem.start_state = x_start
+        # scene.set_model_state(problem.start_state)
+        # scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
+        # problem.start_state = scene.get_model_state()
+        # sc = self.ompl_solver.get_problem().get_scene()
+        # signal.signal(signal.SIGINT, sig_int_handler)
+        solution = self.ompl_solver.solve()
+        return solution
+    # def solve_grasp_phase(self, q_start, q_goal, t_start, t_goal, target_object_location):
+    #     duration = t_goal - t_start
+    #     self.opt_problem.T = int(duration / self.dt)
+    #     self.opt_problem.tau = self.dt
+        
+    #     # Update collision scene so that the soda can gets ignored in collision checking
+    #     self.opt_problem.get_scene().update_collision_objects()
+        
+    #     self.opt_problem.update(q_start, 0)
+    #     q_start = self.opt_problem.apply_start_state(True)
+    #     straight_line = np.linspace(q_start, q_goal, self.opt_problem.T)
+    #     zero_motion = np.zeros((self.opt_problem.T,self.opt_problem.N))
+    #     for t in range(self.opt_problem.T):
+    #         zero_motion[t,:] = q_start
+    #     # self.opt_problem.initial_trajectory = zero_motion
+        
+    #     # self.opt_problem.set_goal('JointPose', q_start, 0)
+    #     # self.opt_problem.set_rho('JointPose', 1e5, 0)
+    #     # self.opt_problem.set_goal('JointPose', q_goal, -1)
+    #     # self.opt_problem.set_rho('JointPose', 1e5, -1)
+
+    #     # self.opt_problem.set_rho('LiftOffTable', 1e2, 0)
+    #     for t in range(self.opt_problem.T):
+    #         self.opt_problem.set_rho('Position', 1e3, t)
+    #         self.opt_problem.set_goal('Position', target_object_location[:3], t)
+    #         # self.opt_problem.set_rho('LiftOffTable', 1e2, midpoint+before_and_after+i)
+
+    #     initial_cost = 0
+    #     for t in range(self.opt_problem.T):
+    #         self.opt_problem.update(straight_line[t,:], t)
+    #         cost = self.opt_problem.get_scalar_task_cost(t) + self.opt_problem.get_scalar_transition_cost(t)
+    #         initial_cost += cost
+    #         print(t, self.opt_problem.get_scene().is_state_valid(True), cost)
+
+    #     solution = self.opt_solver.solve()
+    #     print("[TrajOpt] Solved in", self.opt_solver.get_planning_time(), "final cost", self.opt_problem.get_cost_evolution()[1][-1])
+    #     return solution
+
+
+if __name__ == "__main__":
+    exo.Setup.init_ros()
+
+    planner = DrivebyPickAndPlaceDemo(debug=True)  
+    
+    # Phase 1 (Approach): From start_state to the beginning of the grasping 
+    # phase.
+    
+    # First, we need to obtain a possible first grasp pose using IK.
+    # This will be the goal_state for the Time-Indexed RRT-Connect and the
+    # start_state for the optimisation-based planning in Phase 2.
+    # q_goal_approach = planner.solve_ik(planner.target_object_location, start_time=planner.t_begin_grasp, base_position_rho=1)
+    # q_goal_approach = planner.clamp_state_to_within_joint_bounds(q_goal_approach)
+
+    # Check if this configuration is collision-free
+    # planner.ik_problem.update(q_goal_approach)
+    # print("q_goal_approach valid?", planner.ik_problem.get_scene().is_state_valid(True))
+    # assert(planner.ik_problem.get_scene().is_state_valid(True))
+    def to_traj_file(soln, filename):
+        import sys
+        import os
+
+        rows, cols = soln.shape
+        # remove additional columns
+        if cols > 4:
+            soln = soln[:,cols-3:cols]
+            print("trimmed the columns")
+        
+        traj_file = os.path.abspath(filename)
+        # write to .traj file
+        traj_file = open(filename, "w")
+        traj_file.write("1\n")
+        traj_file.write("%d %d\n" %(rows, cols))
+        for i in range(rows):
+            traj_file.write("%f %f %f %f\n" %(soln[i,0], soln[i,1], soln[i,2], soln[i,3]))
+        traj_file.close()
+    
+    # Now, we can use Time-Indexed RRT-Connect to obtain an approach trajectory
+    # solution_approach = planner.solve_tirrtconnect([0,0,0], [1,-2,0], 0.,10)
+    solution_approach = planner.solve_rrtconnect()
+    print(solution_approach)
+    plot(solution_approach)
+
+    row, col = solution_approach.shape
+    time_arr = np.arange(row) * 0.1
+    solution = np.insert(solution_approach,0, time_arr, axis=1)
+    print(solution)
+    publish_trajectory(solution_approach, 10.0, planner.ompl_solver.get_problem())
+    print("to traj file")
+    # output base trajectory to traj file.
+    to_traj_file(solution, "base_trajectory/base_trajectory_file.traj")
+    print("sent to traj file. look for it now")
+    publish_trajectory(solution_approach[:,1:4], planner.t_total, planner.ompl_problem)
+
+        
+        
+        
+
+
+    
+    # # Phase 2 (Grasp): From the beginning of the grasping phase to the end of it.
+    # # Note: We first obtain a possible goal IK
+    # q_goal_grasp = planner.solve_ik(planner.target_object_location, start_time=planner.t_begin_grasp+planner.t_grasp_duration, base_position_rho=1)
+    # q_goal_grasp = planner.clamp_state_to_within_joint_bounds(q_goal_grasp)
+    
+    # # Check if this configuration is collision-free
+    # planner.ik_problem.update(q_goal_grasp)
+    # print("q_goal_grasp valid?", planner.ik_problem.get_scene().is_state_valid(True))
+    # assert(planner.ik_problem.get_scene().is_state_valid(True))
+
+    # solution_grasp = planner.solve_grasp_phase(q_goal_approach, q_goal_grasp, planner.t_begin_grasp, planner.t_begin_grasp+planner.t_grasp_duration, target_object_location=planner.target_object_location)
+    # publish_trajectory(solution_grasp, planner.t_grasp_duration, planner.opt_problem)
+
+    # # Phase 3 (Return): From the end of the grasping phase to the final place/goal location
+    # q_goal_place = planner.solve_ik(planner.target_object_location, start_time=planner.t_begin_grasp+planner.t_grasp_duration, base_position_rho=1e2)
+    # # problem.set_rho('BaseOrientation', 1e2, -1)
+    # # problem.set_rho('BasePosition', 1e2, -1)
+    # # problem.set_goal('BasePosition', [1., 0.6], -1)
+
+    # Ts = solution_approach[:, 0]
+    # solution = solution_approach[:, 1:]
+    # publish_time_indexed_trajectory(solution, Ts, planner.ompl_problem)
+
+    # raise
+
+    # Ts = solution[:, 0]
+    # solution = solution[:, 1:]
+    # publish_time_indexed_trajectory(solution, Ts, problem)
+    # plot(solution[:,1:], labels=scene.get_controlled_joint_names())
+
+    # # Add a custom publish_trajectory to support attaching the Coke can...
+    # def publish_trajectory(traj, T, problem, once=False):
+    #     if len(traj) == 0:
+    #         print("Trajectory has zero elements")
+    #         raise
+    #     signal.signal(signal.SIGINT, sig_int_handler)
+    #     print('Playing back trajectory ' + str(T) + 's')
+    #     dt = float(T) / float(len(traj))
+    #     t = 0
+    #     while True:
+    #         try:
+    #             publish_pose(traj[t], problem, float(t) * dt)
+    #             sleep(dt)
+
+    #             # Create screenshot if desired
+    #             if use_screenshot:
+    #                 screenshot('/tmp/hsr_driveby_visualisation_{:03d}.png'.format(t))
+    #                 sleep(0.1)
+    #                 if t == len(traj) - 1:
+    #                     print("Screenshots created, exiting.")
+    #                     break
+
+    #             if t >= len(traj) - 1 and once:
+    #                 return
+    #             t = (t + 1) % len(traj)
+    #             if t == midpoint:
+    #                 scene.attach_object("Can", "hand_palm_link")
+    #             elif t == 0:
+    #                 scene.attach_object_local("Can", "", mug_location)
+    #         except KeyboardInterrupt:
+    #             return False
+
+    # publish_trajectory(solution, problem.T*problem.tau, problem)

@@ -1,0 +1,316 @@
+#!/usr/bin/env python
+from __future__ import print_function
+# from pyexotica.transformations import euler_from_quaternion
+# import pyexotica as exo
+from pyexotica.transformations import quaternion_from_euler
+from pyexotica import KDLFrame
+import numpy as np
+
+import re
+
+'''
+Creates SDF files in a folder into scene files. Reads world file and gets positions.
+Breaks with mesh files. Uses a ton of nested while loops.
+Assumes all sdf files are in the same folder.
+SDF version 1.5
+'''
+
+class link:
+    def __init__(self, name, pos, shape, geometry):
+        self.name = name
+        # location (array)
+        self.pos = pos
+        # shape (string) box, cylinder ...
+        self.shape = shape
+        # geometry of shape.
+        self.geometry = geometry
+
+def parseWorldFile(world_file_name, debug=True):
+    data = []
+    data = []
+    with open(world_file_name, 'rU') as fin:
+        for line in fin:
+            line = line.strip()
+            if line:
+                data.append(line)
+
+    objects = {}
+     # # Get name of scene
+    assert data[0][0] == "<" and data[0][-1:] == ">"
+    # sceneName = data[0].replace("(", "").replace(")+", "")
+
+    if debug:
+        print("Parsing Scene:", world_file_name)
+        # print(data)
+    idx = 1
+    while idx < len(data):
+        # if re.search("</sdf>",data[idx]):
+        if "</sdf>" in data[idx]:
+            if debug:
+                print("Done")
+            break
+        elif "<include" in data[idx]:
+            name = ""
+            uri = ""
+            position = []
+            quaternion = []
+            components = []
+            while not "</include" in data[idx]:
+                print(data[idx])
+                if "<name" in data[idx]:
+                    temp = re.search("<name>\s*\**(.+?)\s*</name>", data[idx])
+                    name = temp.group(1)
+                if "<uri" in data[idx]:
+                    temp = re.search("<uri>\s*model://(.+?)\s*</uri>", data[idx])
+                    uri = temp.group(1)
+                    # assume uri is the same as the object name
+                if "<pose" in data[idx]:
+                    temp = re.findall('[-+]?\d*\.[-+]?\d+|[-+]?\d+', data[idx])
+                    # position = [float(temp[0]), float(temp[1]), float(temp[2])]
+                    quat = quaternion_from_euler(float(temp[3]), float(temp[4]), float(temp[5]))
+                    quaternion = [quat[1], quat[2], quat[3], quat[0]]
+                    frame = KDLFrame([float(temp[0]), float(temp[1]), float(temp[2]),quat[1], quat[2], quat[3], quat[0]])
+                idx += 1
+            components.append({'uri': uri,
+                                'frame': frame})
+            objects.update({name: components})
+        idx += 1
+    return objects
+
+
+def parseSceneFile(file_name, transform_frame, debug = True):
+    data = []
+    with open(file_name, 'rU') as fin:
+        for line in fin:
+            line = line.strip()
+            if line:
+                data.append(line)
+
+    objects = {}
+    name = ""
+
+    # # Get name of scene
+    assert data[0][0] == "<" and data[0][-1:] == ">"
+    # remove the
+    sdfName = file_name[:-4]
+    # sceneName = data[0].replace("(", "").replace(")+", "")
+
+    if debug:
+        print("Parsing Scene:", sdfName)
+        # print(data)
+    idx = 1
+    while idx < len(data):
+        if "</sdf>" in data[idx]:
+            if debug:
+                print("Done")
+            break
+        elif "<model name" in data[idx]:
+            temp = re.search("<model\s*name\s*=\s*[\'\"]+\**(.+?)[\'\"]+", data[idx])
+            model_name = temp.group(1)
+        elif "<link name" in data[idx]:
+            temp = re.search("<link\s*name\s*=\s*[\'\"]+(.+?)[\'\"]+", data[idx])
+            # in link tag
+            if debug:
+                print("in link tag")
+            while not "</link>" in data[idx]:
+                if debug:
+                    print(data[idx])
+                if "<collision" in data[idx]:
+                    if "name" in data[idx]:
+                        temp = re.search("<collision\s*name\s*=\s*[\'\"]+(.+?)[\'\"]+", data[idx])
+                    components = []
+                    name = temp.group(1)
+                    geometry = []
+                    shape = ""
+                    pos = []
+                    # in collision tag
+                    if debug:
+                        print("in collision tag")
+                    while not "</collision" in data[idx]:
+                        if debug:
+                            print(data[idx])
+                        # in some cases, pose is in collision
+                        if "<pose>" in data[idx]:
+                            pos = re.findall("[-+]?\d*\.[-+]?\d+|[-+]?\d+", data[idx])   
+                        if "<geometry" in data[idx]:
+                            geo_idx = idx
+                            # in geometry tag
+                            if debug:
+                                print("in geometry tag")
+                            while not "</geometry" in data[geo_idx]:
+                                if debug:
+                                    print(data[geo_idx])
+                                if "<box" in data[geo_idx]:
+                                    shape = "box"
+                                    # in shape tag
+                                    if debug:
+                                        print("in box tag")
+                                    while not "</box>" in data[geo_idx]:
+                                        if debug:
+                                            print(data[geo_idx])
+                                        if "<size>" in data[geo_idx]:
+                                            geometry = re.findall('[-+]?\d*\.?[-+]?\d+', data[geo_idx])
+                                            if debug:
+                                                print(geometry)
+                                        geo_idx += 1
+
+                                elif "<cylinder" in data[geo_idx]:
+                                    shape = "cylinder"
+                                    # in shape tag
+                                    if debug:
+                                        print("in cylinder tag")
+                                    while not "</cylinder>" in data[geo_idx]:
+                                        if debug:
+                                            print(data[geo_idx])
+                                        if "<radius" in data[geo_idx]:
+                                            # print(re.findall('\d*\.?\d+', data[geo_idx]))
+                                            # print(type(re.findall('\d*\.?\d+', data[geo_idx])))
+                                            geometry.append(re.findall('[-+]?\d*\.?[-+]?\d+', data[geo_idx])[0])
+                                            if debug:
+                                                print(geometry)
+                                        if "<length" in data[geo_idx]:
+                                            geometry.append(re.findall('[-+]?\d*\.?[-+]?\d+', data[geo_idx])[0])
+                                            if debug:
+                                                print(geometry)
+                                        geo_idx += 1
+                                # if "<cylinder>" in data[idx]:
+                                #     shape = "cylinder"
+                                geo_idx += 1
+                        idx += 1
+                    if debug:
+                        print("exited collision tag =============================")
+                        print(shape)
+                        print(pos)
+                        print(geometry)
+                    q = quaternion_from_euler(float(pos[3]), float(pos[4]),float(pos[5]))
+                    if debug:
+                        print(q)
+                    # frame = KDLFrame([pos[0], pos[1], pos[2], q[1], q[2], q[3], q[0]])*transform_frame
+                    qu = transform_frame.get_quaternion()
+                    po = transform_frame.get_translation()
+                    p0 = float(pos[0])
+                    p1=float(pos[1])
+                    p2=float(pos[2])
+
+                    frame =KDLFrame([0,0,0,qu[0],qu[1],qu[2],qu[3]])
+                    frame = KDLFrame([0,0,0,qu[0],qu[1],qu[2],qu[3]]).inverse() * KDLFrame([p0,p1,p2, q[1], q[2], q[3], q[0]])
+                    pos = frame.get_translation() + np.array([po[0],po[1],po[2]])
+                    rot = frame.get_quaternion()
+                    frame = KDLFrame(np.concatenate((pos,rot)))
+
+                    components.append({'type': shape,
+                                    'size': geometry,
+                                    'position': frame.get_translation(),
+                                    'orientation': frame.get_quaternion()})
+                    objects.update({name: components})
+                if "<visual" in data[idx]:
+                    while not "</visual" in data[idx]:
+                        idx += 1
+                # in some cases pose is in link tag
+                if "<pose>" in data[idx]:
+                    pos = re.findall("[-+]?\d*\.\d+|\d+", data[idx])
+                idx += 1
+            # return objects
+        idx += 1
+    return objects, sdfName, model_name
+
+def writeBoxGeometryToSdfFile(fileSdf, geometry, objectName, objectNumber):
+    position = geometry['position']
+    orientation = geometry['orientation']
+    rpy = euler_from_quaternion(
+        [orientation[3], orientation[0], orientation[1], orientation[2]])
+    size = geometry['size']
+    color = geometry['color']
+    fileSdf.write("            <link name='%s'>\n"
+                  "                <pose>%f %f %f %f %f %f</pose>\n"
+                  "                <collision name='collision'>\n"
+                  "                    <geometry>\n"
+                  "                        <box>\n"
+                  "                            <size>%f %f %f</size>\n"
+                  "                        </box>\n"
+                  "                    </geometry>\n"
+                  "                </collision>\n"
+                  "                <visual name='visual'>\n"
+                  "                    <geometry>\n"
+                  "                        <box>\n"
+                  "                            <size>%f %f %f</size>\n"
+                  "                        </box>\n"
+                  "                    </geometry>\n"
+                  "                    <material>\n"
+                  "                        <ambient>%f %f %f</ambient>\n"
+                  "                        <diffuse>%f %f %f %f</diffuse>\n"
+                  "                    </material>\n"
+                  "                </visual>\n"
+                  "            </link>\n"
+                  % (objectName + "_" + str(objectNumber),
+                     position[0], position[1], position[2],
+                     rpy[0], rpy[1], rpy[2],
+                     size[0], size[1], size[2], size[0], size[1], size[2],
+                     color[0], color[1], color[2],
+                     color[0], color[1], color[2], color[3]))
+
+
+# prints to scene file
+def createSceneFromSdf(scene_name, objects, model_name):
+    fileScene = open(scene_name, "w")
+
+    # fileSdf.write("<sdf version='1.4'>\n"
+    #               "    <world name='demo'>\n")
+    fileScene.write("(" + model_name + ")" + "+\n"
+                    "* " + model_name + "\n"
+                    "%d\n" %len(objects))
+
+    for objectName in objects:
+        shape = objects.get(objectName)[0].get('type')
+        geometry = objects.get(objectName)[0].get('size')
+        position = objects.get(objectName)[0].get('position')
+        orientation = objects.get(objectName)[0].get('orientation')
+        print(shape)
+        print(geometry)
+        print(position)
+        print(orientation)
+        # geometry[0] + " " + geometry[1] + " " + geometry[2] + "\n"
+        # position[0] + " " + position[1] + " " + position[2] _ "\n"
+        if shape == 'cylinder':
+            fileScene.write(shape + "\n"+
+                            str(geometry[0]) + " " + str(geometry[1]) + "\n")
+                            # "%f %f %f\n"
+                            # "%f %f %f\n"
+                            # % (geometry[0], geometry[1], geometry[2], position[0], position[1], position[2]))
+        elif shape == 'box':
+            fileScene.write(shape + "\n"+
+                            str(geometry[0]) + " " + str(geometry[1]) + " " + str(geometry[2]) + "\n")
+                            # "%f %f %f\n"
+                            # "%f %f %f\n"
+                            # % (geometry[0], geometry[1], geometry[2], position[0], position[1], position[2]))
+        fileScene.write(str(position[0]) + " " + str(position[1]) + " " + str(position[2]) + "\n"+
+                        str(orientation[0])+" "+str(orientation[1])+" "+str(orientation[2])+" "+str(orientation[3])+"\n"
+                        "1 1 1 1\n")
+    fileScene.write(".\n")
+    fileScene.close()
+
+if __name__ == "__main__":
+    import os
+    import sys
+    import numpy as np
+
+    # objects = parseWorldFile('/home/rs36/catkin_ws/src/hsr_driveby_full/resources/wrs2020.world')
+    # objects = parseWorldFile('/home/rs36/catkin_ws/src/hsr_driveby_full/resources/wrs2020_short.world')
+    # path to world file
+    objects = parseWorldFile('')
+    for obj in objects:
+        print(obj)
+        print(objects.get(obj))
+        uri = objects.get(obj)[0].get('uri')
+        # myfile = '/home/rs36/catkin_ws/src/hsr_driveby_full/scene_shape/' + uri + '/model.sdf'
+        # path to file with sdf files
+        my_file = ''
+        print(myfile)
+        # output_file = '/home/rs36/catkin_ws/src/hsr_driveby_full/scene_shape/' + uri + '/' + obj + ".scene"
+        output_file = ''
+        print(output_file)
+        print("===================")
+
+
+        parts, sdfName, model_name = parseSceneFile(myfile, objects.get(obj)[0].get('frame'))
+    print(">>> DONE <<<")
