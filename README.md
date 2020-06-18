@@ -20,10 +20,10 @@
 - Wait for gazebo to finish loading
 - Press play to start the simulation
 - In an new terminal window, go to scripts directory: `roscd hsr_driveby_full/scripts/rob_stuff/`
-- 2 choices:
+- 3 choices:
   - 1. Run a saved trajectory output of AICO solver `./hsrb_pickup.py`
   - 2. Rerun AICO solver `./hsr_meeting_table_aico`
-  - 2.5 comment and uncomment line in main function.
+  - 3. comment and uncomment line in main function.
 #### Video
 - see driveby_pickup.mp4
   
