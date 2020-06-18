@@ -26,7 +26,7 @@
   - 3. comment and uncomment line in main function.
 #### Video
 - see driveby_pickup.mp4
-=============================================================================================================================
+
 ### Driveby table with Apriltags
 #### Description
 - Tried to incorporate Apriltags to identify position of sodacan
@@ -44,13 +44,16 @@
 - by default, it should run a saved trajectory. comment and uncomment a line in the main function of hsrb_exotica_python_script.py.
 #### Video
 - see go_to_location.movie.mp4 and go_to_location.movie_2.mp4
-=============================================================================================================================
+
 ### Pick and Place Planner
 #### Description
 - Driveby pick up of soda can and driveby placing of soda can. In planning scene. Working on running in Gazebo. Kinda screwed up on converting SDF => Scene files. world frame offest by 90 degrees in xy plane. Need to fix /resources/sdf_to_scene_15_in_world_v2
 - uses IK solver to find base positions for pickup and placing pose.
 - RRTConnect to go from base poses: start_pose => grasp_pose => intermediate_pose (some pose between the start and placing location that acts as the end pose of the picking segment and the start pose of the placing segment) => place_pose => start_pose
 - AICO solver to solve for grasping and placing motions.
+
+### 4th Year Project Paper
+- [4th Year Paper](https://github.com/rshi159/4th-Year-Paper)
  
 - need to specify start pose, intermediate pose, soda_can location, target_placing location, duration_of_gripper_opening/closing, and timestep for AICO solver. These are all currently hardcoded.
 #### Run
