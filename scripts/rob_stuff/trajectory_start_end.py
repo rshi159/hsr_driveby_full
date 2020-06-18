@@ -77,7 +77,7 @@ while not rospy.is_shutdown():
         start_r, start_p,stary_y = start_pose_map.get_rpy()
         # only accept possible positions if pitch and roll fall beneath arbitrary threshold.
         # if abs(start_r) < 0.01 and abs(start_p) < 0.01:
-        if abs(start_r) < 0.01 and abs(start_p) < 0.01:
+        if abs(start_r) < 0.05 and abs(start_p) < 0.05:
             # print(start_pose_map.get_rpy())
             publish(start_pose_map, 'my_start_pos', 'map')
         

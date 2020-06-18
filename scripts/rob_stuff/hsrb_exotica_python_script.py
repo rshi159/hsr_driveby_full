@@ -129,6 +129,7 @@ def transform_base_traj(base_pose, tf_base):
 #     return
 
 def send_trajectory(received_traj,grasp_times, dt):
+    # set up hsr python interface
     robot = hsrb_interface.Robot()
     whole_body = robot.get('whole_body')
     hsrb_gripper = robot.get('gripper')
@@ -141,13 +142,16 @@ def send_trajectory(received_traj,grasp_times, dt):
         rospy.logerr('fail to init')
         sys.exit()
     print('going to start_location')
+    # go to starting location.
+
     listener = tf.TransformListener()
     listener.waitForTransform('/map','/my_start_pos', rospy.Time(0),rospy.Duration(3.0))
     (start_pos, start_quat) = listener.lookupTransform('/map','/my_start_pos', rospy.Time(0))
     start_state = exo.KDLFrame(start_pos + start_quat)
     x,y,z,roll,pitch,yaw = start_state.get_translation_and_rpy()
     print(yaw)
-    # omni_base.go_abs(x,y,yaw,1000.0)
+    # go to starting position
+    omni_base.go_abs(x,y,yaw,1000.0)
     whole_body.move_to_go()
     # exit()
     '''takes input of trajectory from hsr_meeting_table_aico, [grasp_start, grasp_duration]
@@ -165,6 +169,8 @@ def send_trajectory(received_traj,grasp_times, dt):
     # cli_arm, cli_base, cli_grip_follow_traj, cli_grip_force = setup()
     cli_arm, cli_base = setup()
     
+    # set current hsr base position to zero so I can run trajectories multiple times by resetting
+    # gazebo with gazebo_reset.
     base_posestamped = rospy.wait_for_message('/global_pose', PoseStamped)
 
     base_pose = base_posestamped.pose
@@ -180,6 +186,7 @@ def send_trajectory(received_traj,grasp_times, dt):
 
     time_list = np.arange(0.0,dt*len(received_traj),dt)
 
+    # rearrange traj
     arm_list = received_traj[:,3:8]
     base_list = received_traj[:,0:3]
     arm_list = np.c_[arm_list,time_list]
@@ -195,6 +202,7 @@ def send_trajectory(received_traj,grasp_times, dt):
     base_list = base_list[1::]
     arm_list = arm_list[1::]
 
+    # get user input to run traj in gazebo
     print("you can run ./log_vel.py now.")
     print("press enter to continue")
     raw_input()
@@ -203,6 +211,8 @@ def send_trajectory(received_traj,grasp_times, dt):
     print("loading base goal")
     base.load_base_goal(base_list,cli_base,dt)
 
+    # gripper controller doesnt work. not listed in lise_controllers. See setup(). on around line 30
+    # thus jank stuff with rospy sleep to get the gripper to close at the right time
     print("loading gripper goal")
     # gripper.load_gripper_goal(gripper_list,cli_grip_follow_traj)
     #open gripper
@@ -221,8 +231,8 @@ def send_trajectory(received_traj,grasp_times, dt):
     exit()
 
 if __name__ == '__main__':
-    # soln = np.load('plotting/example_traj/example_trajectory_t99.npy', allow_pickle = False)
-    soln = planner.start_aico()
+    soln = np.load('plotting/example_traj/example_trajectory_t99.npy', allow_pickle = False)
+    # soln = planner.start_aico()
     send_trajectory(soln,[4.5, 0.0], 0.1)
 
 
