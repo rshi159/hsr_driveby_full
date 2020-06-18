@@ -34,11 +34,6 @@ joint_limits = problem.get_scene().get_kinematic_tree().get_joint_limits()
 # Set target for soda can
 scene.attach_object("SodaCan", "TargetObject")
 scene.attach_object_local("TargetObject", "LongBoi", exo.KDLFrame([0.0,0.0,0.06]))#+0.04]))
-# scene.attach_object_local("wrc_bookshelf","map", exo.KDLFrame([2.7,-1,0,0,0,-1.57]))
-# scene.attach_object_local("wrc_frame","map", exo.KDLFrame([3,0,0,0,0,0]))
-# scene.attach_object_local("wrc_bookshelf","wrc_frame", exo.KDLFrame([2.7,-1,0,0,0,-1.57]))
-# scene.attach_object_local("wrc_bin_black","wrc_frame", exo.KDLFrame([-2.7,-1.7,0,0,0,0]))
-# scene.attach_object_local("TargetObject", "Table", exo.KDLFrame([0.2,0.1,0.06]))#+0.04]))
 
 # Move robot to start state
 x_start = problem.start_state
@@ -48,10 +43,6 @@ x_start[2]=  -1.57
 # x_start[2] = -np.pi/2.
 problem.start_state = x_start
 scene.set_model_state(problem.start_state)
-#scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': -1.})
-#set to move to go, assuming robot is already moving
-# <!-- made changes here ** -->
-# scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': -np.pi/2})
 scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
 problem.start_state = scene.get_model_state()
 q_start = problem.apply_start_state(True)
@@ -64,8 +55,7 @@ if np.any(q_start < joint_limits[:,0]) or np.any(q_start > joint_limits[:,1]):
 
 mug_location = scene.fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
 
-# t_grasp_begin = 3.5 #4.2
-t_grasp_begin = 6.5
+t_grasp_begin = 2.87
 t_grasp_duration = 0.5
 # t_grasp_duration = 2.5
 T_grasp_begin = int(t_grasp_begin / problem.tau)
@@ -81,18 +71,19 @@ for t in range(T_grasp_begin, T_grasp_end):
     # The HSR has a poor reachability, so we deactivate the base tracking here
     # problem.set_rho('BasePosition', 0, t)
 
-# Height above the table before and after grasp
+# Height above the table 1 second before and after grasp
 problem.set_rho('LiftOffTable', 1e2, T_grasp_begin - 10)
 problem.set_rho('LiftOffTable', 1e3, T_grasp_end + 10)
 
+# while grasping, align the gripper and try to maintain an
+# intermediate-return-to-go pose (whole_body_move_to_neutral pose) 
+# to smoothly transition to final pose
 for t in range(T_grasp_begin, T_grasp_end):
-    #problem.set_rho('AxisAlignment', 1e4, t)
     problem.set_rho('AxisAlignment', 1e2, t)
     problem.set_rho('IntermediateRTG', 0, t)
     problem.set_rho('ReturnToGo', 0, t)
 
 for t in range(T_grasp_end+20, problem.T-20):
-    # problem.set_rho('BaseOrientation',1e3, t)
     problem.set_rho('IntermediateRTG', 1e3, t)
     problem.set_rho('ArmLiftZero', 1e3, -1)
 problem.set_rho('ReturnToGo', 1e3, -1)
@@ -104,52 +95,52 @@ problem.initial_trajectory = zero_motion
 
 solution = solver.solve()
 print("Solved in", solver.get_planning_time(), "final cost", problem.get_cost_evolution()[1][-1])
-# # '''
-# # Show convergence plot
-# fig = plt.figure(1)
-# plt.plot(problem.get_cost_evolution()[0], problem.get_cost_evolution()[1])
-# plt.yscale('log')
-# plt.ylabel('Cost')
-# plt.xlabel('Time (s)')
-# plt.xlim(0,np.max(problem.get_cost_evolution()[0]))
-# plt.title('Convergence')
+# '''
+# Show convergence plot
+fig = plt.figure(1)
+plt.plot(problem.get_cost_evolution()[0], problem.get_cost_evolution()[1])
+plt.yscale('log')
+plt.ylabel('Cost')
+plt.xlabel('Time (s)')
+plt.xlim(0,np.max(problem.get_cost_evolution()[0]))
+plt.title('Convergence')
 
-# # Show cost breakdown
-# fig = plt.figure(2)
-# # '''
-# if do_plot:
-#     costs = {}
-#     ct = 1.0 / problem.tau / problem.T
-#     for t in range(problem.T):
-#         problem.update(solution[t,:],t)
-#     for cost_task in problem.cost.indexing:
-#         task = problem.cost.tasks[cost_task.id]
-#         task_name = task.name
-#         task_id = task.id
-#         costs[task_name] = np.zeros((problem.T,))
-#         # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
-#         for t in range(problem.T):
-#             ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
-#             rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
-#             cost = np.dot(np.dot(ydiff, rho), ydiff)
-#             costs[task_name][t] = ct * cost
-# # '''
+# Show cost breakdown
+fig = plt.figure(2)
+# '''
+if do_plot:
+    costs = {}
+    ct = 1.0 / problem.tau / problem.T
+    for t in range(problem.T):
+        problem.update(solution[t,:],t)
+    for cost_task in problem.cost.indexing:
+        task = problem.cost.tasks[cost_task.id]
+        task_name = task.name
+        task_id = task.id
+        costs[task_name] = np.zeros((problem.T,))
+        # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
+        for t in range(problem.T):
+            ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+            cost = np.dot(np.dot(ydiff, rho), ydiff)
+            costs[task_name][t] = ct * cost
+# '''
 
-# if do_plot:
-#     costs['Task'] = np.zeros((problem.T,))
-#     costs['Transition'] = np.zeros((problem.T,))
-#     for t in range(problem.T):
-#         costs['Task'][t] = problem.get_scalar_task_cost(t)
-#         costs['Transition'][t] = problem.get_scalar_transition_cost(t)
-#     for cost in costs:
-#         plt.plot(costs[cost], label=cost)
-#     plt.xlim(0,problem.T)
-#     plt.title('Cost breakdown across trajectory per task')
-#     plt.show()
-#     # plot pos, velocity, and acceleration
-# # plot(solution, labels=scene.get_controlled_joint_names())
-# fig = plt.figure(7)
-# plt.plot(solution, label=scene.get_controlled_joint_names())
+if do_plot:
+    costs['Task'] = np.zeros((problem.T,))
+    costs['Transition'] = np.zeros((problem.T,))
+    for t in range(problem.T):
+        costs['Task'][t] = problem.get_scalar_task_cost(t)
+        costs['Transition'][t] = problem.get_scalar_transition_cost(t)
+    for cost in costs:
+        plt.plot(costs[cost], label=cost)
+    plt.xlim(0,problem.T)
+    plt.title('Cost breakdown across trajectory per task')
+    plt.show()
+    # plot pos, velocity, and acceleration
+# plot(solution, labels=scene.get_controlled_joint_names())
+fig = plt.figure(7)
+plt.plot(solution, label=scene.get_controlled_joint_names())
 
 def gauss(n,sigma):
     r = range(-int(n/2),int(n/2)+1)

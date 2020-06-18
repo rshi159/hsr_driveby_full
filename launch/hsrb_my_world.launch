@@ -21,7 +21,8 @@
   <arg     if="$(arg fast_physics)" name="world_suffix" value="_fast"/>
   <arg name="world_name" default="$(find tmc_wrs_gazebo_worlds)/worlds/wrs2020$(arg world_suffix).world" />
 
-  <arg name="robot_pos" default="-x -2.1 -y 1.2 -z 0 -Y -1.57" />
+  <!-- <arg name="robot_pos" default="-x -2.1 -y 1.2 -z 0 -Y -1.57" /> -->
+  <arg name="robot_pos" default="-x -2.1 -y 1.2 -z 0 -Y 0" />
 
   <param name="/use_sim_time" value="true" />
 

@@ -2,7 +2,7 @@
 <PlannerDemoConfig>
     <AICOSolver Name="MySolver">
         <Debug>1</Debug>
-        <MaxIterations>500</MaxIterations>
+        <MaxIterations>200</MaxIterations>
         <MaxBacktrackIterations>50</MaxBacktrackIterations>
         <FunctionTolerance>1e-5</FunctionTolerance>
         <Damping>0.001</Damping>
@@ -102,8 +102,11 @@
             <JointPose Name="BaseOrientation" JointMap="2" JointRef="-1.57"/>
             <!-- 4=arm_flex 5=arm_roll 6=wrist_flex 7=wrist_roll -->
             <!-- <JointPose Name="ReturnToGo" JointMap="4 5 6 7" JointRef="0 -1.570796 -1.570796 0"/> -->
-            <JointPose Name="ReturnToGo" JointMap="2 4 5" JointRef="-1.57 0 -1.570796"/>
-            <JointPose Name="IntermediateRTG" JointMap="2 4 5" JointRef="-1.57 0 0"/>
+            <!-- <JointPose Name="ReturnToGo" JointMap="2 4 5" JointRef="-1.57 0 -1.570796"/>
+            <JointPose Name="IntermediateRTG" JointMap="2 4 5" JointRef="-1.57 0 0"/> -->
+            <!-- <JointPose Name="ReturnToGo" JointMap="4 5" JointRef="0 -1.570796"/> -->
+            <JointPose Name="ReturnToGo" JointMap="4 5" JointRef="0 0"/>
+            <JointPose Name="IntermediateRTG" JointMap="4 5" JointRef="0 0"/>
             <JointPose Name="ArmLiftZero" JointMap="3" JointRef="0"/>
             <!-- <JointPose Name="ReturnToGo" JointMap="3 4 5 6 7" JointRef="0 0 -1.570796 -1.570796 0"/> -->
             <!-- <JointPose Name="ArmToGrasp" JointMap="5 6" JointRef="-0.7850398 -1.570796"/> -->
@@ -153,7 +156,7 @@
         <!-- Trajectory of 10s at tau=50Hz => T=500 waypoints -->
         <!-- <T>500</T>
         <tau>0.02</tau> -->
-        <T>155</T>
+        <T>150</T>
         <tau>0.1</tau>
         <Wrate>1e2</Wrate>
         <!-- <W>5 5 5 5 4 3 2 1</W> -->

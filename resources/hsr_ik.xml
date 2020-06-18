@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<PlannerDemoConfig>
+    <BayesianIKSolver Name="MySolver" MaxIterations="500" Damping="0.01" Debug="0"/>
+
+    <UnconstrainedEndPoseProblem Name="MyProblem">
+        <PlanningScene>
+            <Scene>
+                <JointGroup>arm_with_base</JointGroup>
+                <!-- <JointGroup>arm</JointGroup> -->
+                <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams>
+                <URDF>{hsr_description}/robots/hsrb4s.urdf</URDF>
+                <SRDF>{hsr_driveby_full}/resources/hsrb.srdf</SRDF>
+
+                <Links>
+                    <Link Name="BaseTarget"/>
+                    <Link Name="TargetObject"/>
+                </Links>
+                <Trajectories>
+                    <Trajectory Link="BaseTarget" File="{hsr_driveby_full}/scripts/rob_stuff/base_trajectory/test_1.traj"/>
+                </Trajectories>
+
+                <CollisionScene>CollisionSceneFCLLatest</CollisionScene>
+                <LoadScene>
+                    {hsr_driveby_full}/resources/soda_can.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_frame/wrc_frame.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bookshelf/wrc_bookshelf.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_black/wrc_bin_black.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_green/wrc_bin_green.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_stair_like_drawer/wrc_stair_like_drawer.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tall_table/wrc_tall_table.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/wrc_long_table.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/wrc_long_table_0.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/wrc_tray_1.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/wrc_tray_2.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_a/wrc_container_a.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_b/wrc_container_b.scene<!-- ;
+                    {hsr_driveby_full}/scene_mesh/person_standing/person_standing.scene;
+                    {hsr_driveby_full}/scene_mesh/trofast/trofast.scene -->
+                    <!-- {hsr_driveby_full}/scene_shape/wrc_frame/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bookshelf/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_black/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_bin_green/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_stair_like_drawer/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tall_table/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_long_table/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_tray/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_a/model.scene;
+                    {hsr_driveby_full}/scene_shape/wrc_container_b/model.scene;
+                    {hsr_driveby_full}/scene_mesh/person_standing/person_standing.scene;
+                    {hsr_driveby_full}/scene_mesh/trofast/trofast.scene -->
+                    <!-- {hsr_driveby_full}/resources/meeting_room_table.scene; -->
+                </LoadScene>
+            </Scene>
+
+        </PlanningScene>
+
+        <Maps>
+            <EffPositionXY Name="BasePosition">
+                <EndEffector>
+                    <Frame Link="base_footprint" Base="BaseTarget"/>
+                </EndEffector>
+            </EffPositionXY>
+            <!-- <JointPose Name="BaseOrientation" JointMap="2" JointRef="0"/> -->
+            <EffPosition Name="Position">
+                <EndEffector>
+                    <Frame Link="hand_palm_link" LinkOffset="0 0 0.08 0.7071 0 0.7071 0"/>
+                </EndEffector>
+            </EffPosition>
+            <EffAxisAlignment Name="AxisAlignment">
+                <EndEffector>
+                    <!-- <Frame Link="hand_palm_link" Direction="0 0 1" Axis="1 0 0"/> -->
+                    <Frame Link="hand_palm_link" Axis="0 0 1"/>
+                </EndEffector>
+            </EffAxisAlignment>
+            <JointLimit Name="JL"/>
+            <SmoothCollisionDistance Name="SCD" CheckSelfCollision="0" WorldMargin="0.05" RobotMargin="0.01"/>
+            <JointPose Name="IntermediateRTG" JointMap="0 2 3 4 5" JointRef="0 -1.57 0 0 0"/>
+        </Maps>
+
+        <Cost>
+            <Task Task="BasePosition" Rho="0"/>
+            <!-- <Task Task="BaseOrientation" Rho="0"/> -->
+            <Task Task="Position" Rho="1e7"/>
+            <Task Task="AxisAlignment" Rho="1e5"/>
+            <Task Task="JL" Rho="1e3"/>
+            <Task Task="SCD" Rho="1e2"/>
+            <Task Task="IntermediateRTG" Rho="1e2"/>
+        </Cost>
+        <!-- <W>6 5 4 3 2 1</W> -->
+        <W>10 10 3 5 3.33 1 1 1</W>
+    </UnconstrainedEndPoseProblem>
+</PlannerDemoConfig>

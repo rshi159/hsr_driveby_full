@@ -75,26 +75,54 @@ if __name__ == "__main__":
             traj_file.write("%f %f %f %f\n" %(soln[i,0], soln[i,1], soln[i,2], soln[i,3]))
         traj_file.close()
 
-    def correct_vel(soln, dt):
-        print(soln.shape)
-        vel_xy_upper = 0.3
-        vel_xy_lower = 0.2
-        row, col = soln.shape
-        diff = np.diff(soln, axis=0)
-        vel =  diff / dt
-        print(vel)
-        print(np.arange(row-1,0,-1))
-        for i in np.arange(row-2,0,-1):
-            print(i)
-            print(vel[i,0])
-            print(vel[i,1])
-            if abs(vel[i,0]) > vel_xy_upper or abs(vel[i,1]) > vel_xy_upper:
-                soln = np.insert(soln,i+1, (soln[i+1,:]-soln[i,:])/2 + soln[i,:], axis = 0)
-                print("high vel")
-            # if vel[i,0] < vel_xy_upper or vel[i,1] < vel_xy_upper:
-            #     soln = np.delete(soln, (i), axis = 0)
-        print(soln.shape)
-        return soln
+    # def correct_vel(soln, dt):
+    #     print(soln.shape)
+    #     vel_xy_upper = 1.5
+    #     vel_xy_lower = 0.5
+    #     row, col = soln.shape
+    #     diff = np.diff(soln, axis=0)
+    #     print("===================")
+    #     print(diff)
+    #     distance = pow(diff,2)
+    #     distance = np.sum(distance, axis=1)
+    #     distance = np.sqrt(distance)
+    #     print(distance)
+    #     vel =  distance / dt
+    #     print(vel)
+    #     print(np.arange(row-1,0,-1))
+    #     # for i in np.arange(row-2,0,-1):
+    #     #     print(i)
+    #     #     print(vel[i,0])
+    #     #     print(vel[i,1])
+    #     #     if abs(vel[i,0]) > vel_xy_upper or abs(vel[i,1]) > vel_xy_upper:
+    #     #         soln = np.insert(soln,i+1, (soln[i+1,:]-soln[i,:])/2 + soln[i,:], axis = 0)
+    #     #         print("high vel")
+    #     #     # if vel[i,0] < vel_xy_upper or vel[i,1] < vel_xy_upper:
+    #     #     #     soln = np.delete(soln, (i), axis = 0)
+    #     # print(soln.shape)
+    #     for i in np.arange(row-2,0,-1):
+    #         if vel[i] > vel_xy_upper:
+    #             # for j in range(np.floor(vel(i+1)/vel_xy_upper)):
+    #             #     np.insert(soln,i+j, ())
+    #             print("===================")
+    #             print(soln(i+1))
+    #             print(soln(i))
+    #             arr = np.arange(soln(i+1,0),soln(i,0),np.ceil(vel(i+1)/vel_xy_upper))
+    #             print(arr)
+    #             exit()
+    #         # remove steps with low velocity 
+    #         if vel[i] < vel_xy_lower:
+    #             sum_vel = vel[i]
+    #             print("========================")
+    #             print(soln)
+    #             while True:
+    #                 if sum_vel > vel_xy_lower:
+    #                     break
+    #                 soln = np.delete(soln, i,0)
+    #                 i -= i
+    #                 sum_vel += vel[i]
+
+    #     return soln
         
     
     # use rrtconnect to find a valid base trajectory that approaches the object
@@ -114,17 +142,29 @@ if __name__ == "__main__":
     print(whole_solution)
     plot(whole_solution)
 
-    whole_solution = correct_vel(whole_solution, 0.5)
-    whole_solution = correct_vel(whole_solution, 0.5)
-    whole_solution = correct_vel(whole_solution, 0.5)
+    # whole_solution = correct_vel(whole_solution, 0.5)
+    # whole_solution = correct_vel(whole_solution, 0.5)
+    # whole_solution = correct_vel(whole_solution, 0.5)
 
     row, col = whole_solution.shape
-    time_arr = np.arange(row) * 0.5
+    vel_limit = 0.5
+    diff = np.diff(whole_solution, axis=0)
+    print("===================")
+    print(diff)
+    distance = pow(diff,2)
+    distance = np.sum(distance, axis=1)
+    distance = np.sqrt(distance)
+    print(distance)
+    distance = np.insert(distance,0,0)
+    # time_arr = np.arange(row) * 0.5
+    dt = distance / vel_limit
+    time_arr = np.cumsum(dt)
     solution = np.insert(whole_solution,0, time_arr, axis=1)
     print(solution)
-    publish_trajectory(whole_solution, 10.0, planner.ompl_solver.get_problem())
+    # publish_trajectory(whole_solution, 10.0, planner.ompl_solver.get_problem())
+    publish_trajectory(whole_solution, time_arr[-1], planner.ompl_solver.get_problem())
     print("to traj file")
     # output base trajectory to traj file.
     to_traj_file(solution, "base_trajectory/base_trajectory_file.traj")
     print("sent to traj file. look for it now")
-    publish_trajectory(solution_approach[:,1:4], planner.t_total, planner.ompl_problem)
+    # publish_trajectory(solution_approach[:,1:4], planner.t_total, planner.ompl_problem)

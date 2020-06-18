@@ -26,12 +26,6 @@ if use_screenshot:
 
 class DrivebyPickAndPlaceDemo(object):
     def __init__(self, debug=False, constrained_ik=False):
-        # self.debug = debug          # Debug mode
-        # self.constrained_ik = constrained_ik
-        # self.t_total = 10.          # Total duration = 10s
-        # self.t_begin_grasp = 4.     # Start of grasp
-        # self.t_grasp_duration = 2.  # Time of the grasp phase
-        # self.dt = 1/60.             # Sampling rate of the trajectory
 
         # Load solvers
         self.ompl_solver = exo.Setup.load_solver(

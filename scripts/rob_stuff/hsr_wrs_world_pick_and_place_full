@@ -1,0 +1,565 @@
+#!/usr/bin/env python
+from __future__ import print_function, division
+
+from time import time, sleep
+import signal
+import numpy as np
+import matplotlib.pyplot as plt
+import rospy
+import pyexotica as exo
+from pyexotica.publish_trajectory import *
+from math import pi, sqrt, exp, cos, radians
+import hsr_wrs_execute_traj
+import time as ti
+
+do_plot = False
+traj_version = -1
+kernel_size = 15
+
+use_screenshot = False
+# ffmpeg -r 50 -f image2 -s 1920x1080 -i ./hsr_driveby_visualisation_%03d.png -vcodec libx264 -pix_fmt yuv420p ./output.mp4
+screenshot = lambda *args: None
+if use_screenshot:
+    from jsk_rviz_plugins.srv import Screenshot, ScreenshotRequest, ScreenshotResponse
+    rospy.wait_for_service('/rviz/screenshot')
+    screenshot = rospy.ServiceProxy('/rviz/screenshot', Screenshot)
+
+class DrivebyPickAndPlaceDemo(object):
+    def __init__(self, debug=True):
+        # Load solvers
+        self.debug = debug
+        self.ompl_solver = exo.Setup.load_solver(
+            '{hsr_driveby_full}/resources/create_base_traj.xml')
+        self.ompl_problem = self.ompl_solver.get_problem()
+        self.ik_solver = exo.Setup.load_solver('{hsr_driveby_full}/resources/hsr_ik.xml')
+        self.ik_problem = self.ik_solver.get_problem()
+    
+    def clamp_state_to_within_joint_bounds(self, q):
+        joint_limits = self.ik_problem.get_scene().get_kinematic_tree().get_joint_limits()
+        return np.clip(q, joint_limits[:,0], joint_limits[:,1])
+
+    def solve_ik(self, pos_target, start_time=1, base_position_rho=0, q_guess=None):
+        self.ik_problem.start_time = start_time
+
+        # self.ik_problem.get_scene().attach_object_local("SodaCan", "", pos_target)
+
+        # scene = self.ik_problem.get_scene()
+        # scene.attach_object("SodaCan", "TargetObject")
+        # scene.attach_object_local("TargetObject", "LongBoi", exo.KDLFrame([0.0,0.0,0.06]))#+0.04]))
+        # scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
+
+        # mug_location = planner.ik_problem.get_scene().fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
+        print(pos_target)
+        number_of_restarts = 50
+        is_valid = False
+        number_of_attempts = 0
+        q = np.zeros(self.ik_problem.N,)
+        self.ik_problem.set_rho('BasePosition', base_position_rho)
+        while not is_valid and number_of_attempts < number_of_restarts:
+            q_rand = np.random.rand(self.ik_problem.N,)
+            if number_of_attempts == 0 and q_guess is not None:
+                q_rand = q_guess
+            self.ik_problem.update(q_rand)
+            self.ik_problem.start_state = self.ik_problem.get_scene().get_model_state()
+            self.ik_problem.set_goal('Position', pos_target[0:3])
+            q = self.ik_solver.solve()[0]
+            final_cost = self.ik_problem.get_cost_evolution()[1][-1]
+            is_valid = self.ik_problem.is_valid() and self.ik_problem.get_scene().is_state_valid()
+            # Check the individual task maps for unconstrained IK
+        # if not self.constrained_ik:
+            task_acceptance_thresholds = {
+                'Position': np.array([0.005, 0.005, 0.02]),  # 5mm in x,y, 2cm in z
+                'SCD': np.array([0.005]),
+                'AxisAlignment': np.abs(np.array([cos(radians(5.))-1.])),  # 5 degrees
+                'JL': np.array([0.001] * self.ik_problem.N),  # Joint limits
+            }
+            task_maps_valid = True
+            for task_name in task_acceptance_thresholds:
+                task = self.ik_problem.get_task_maps()[task_name]
+                ydiff = np.abs(self.ik_problem.cost.ydiff[task.start:task.start+task.length])
+                if np.all(ydiff < task_acceptance_thresholds[task_name]):
+                    False and print(task_name, "is valid")
+                else:
+                    # self.debug and print("> diff", task_name, ydiff, task_acceptance_thresholds[task_name])
+                    task_maps_valid = False
+            # is_valid = is_valid and task_maps_valid
+
+            if self.debug:
+                print("[IK] Solved in", self.ik_solver.get_planning_time(), "Final cost:", final_cost, "Valid?", is_valid)
+
+                # if not self.constrained_ik:
+                #     for task_name in self.ik_problem.get_task_maps():
+                #         task = self.ik_problem.get_task_maps()[task_name]
+                #         print(task_name + ":", self.ik_problem.cost.ydiff[task.start:task.start+task.length])
+                # else:
+                #     print("eq-ydiff", self.ik_problem.equality.ydiff)
+
+            publish_pose(q, self.ik_problem, t=start_time)
+            number_of_attempts += 1
+        if not is_valid:
+            raise RuntimeWarning("Could not find a valid IK configuration")
+        return q
+    def instantiate_ik(self):
+        self.ik_solver = exo.Setup.load_solver('{hsr_driveby_full}/resources/hsr_ik.xml')
+        self.ik_problem = self.ik_solver.get_problem()
+    def instantiate_aico(self):
+        self.aico_solver= exo.Setup.load_solver(
+            '{hsr_driveby_full}/resources/hsr_wrs_world.xml')
+        self.aico_problem = self.aico_solver.get_problem()
+        # set default base orientation
+        self.set_base_orientation = -1.57
+    # set start state for aico solver
+    def set_start_state(self,start_state):
+        self.start_state = start_state
+    # set base orientation for aico solver
+    def set_base_orientation(self, base_orientation):
+        self.base_orientation = base_orientation
+    def solve_rrtconnect(self, start, goal):
+        self.ompl_problem.goal_state = goal
+        scene = self.ompl_problem.get_scene()
+        # x_start[2] = -np.pi/2.
+        self.ompl_problem.start_state = start
+        scene.set_model_state(planner.ompl_problem.start_state)
+        solution = self.ompl_solver.solve()
+        return solution
+    
+    def solve_aico(self, t_grasp_begin, t_grasp_duration, t_traj_duration, grasp):
+        solver = self.aico_solver
+        problem = self.aico_problem
+
+        # use base orientation if one given
+        try:
+            self.aico_problem.set_goal("BaseOrientation", 2, self.base_orientation)
+        except:
+            print("problem with setting base orientation")
+
+        # print(np.ceil(t_traj_duration * 10))
+        problem.T = int(np.ceil(t_traj_duration * 10))
+        scene = problem.get_scene()
+        kt = scene.get_kinematic_tree()
+        joint_limits = problem.get_scene().get_kinematic_tree().get_joint_limits()
+
+        scene.attach_object("SodaCan", "TargetObject")
+        scene.attach_object_local("TargetObject", "LongBoi", exo.KDLFrame([0.0,0.0,0.06]))#+0.04]))
+
+        # set start state
+        x_start = problem.start_state
+        start = self.start_state
+        x_start[0] = start[0]
+        x_start[1] = start[1]
+        x_start[2] = start[2]
+        print(x_start)
+        try:
+            x_start[0:8] = self.start_state
+            print(x_start)
+        except:
+            print("======")
+            print("first pass")
+            print("======")
+            rospy.sleep(1)
+        problem.start_state = x_start
+        scene.set_model_state(problem.start_state)
+        # scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
+        scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})      
+        problem.start_state = scene.get_model_state()
+        q_start = problem.apply_start_state(True)
+        q_start = np.clip(q_start, joint_limits[:,0], joint_limits[:,1])
+        problem.update(q_start, 0)
+        problem.start_state = scene.get_model_state()
+        q_start = problem.apply_start_state(True)
+        if np.any(q_start < joint_limits[:,0]) or np.any(q_start > joint_limits[:,1]):
+            raise RuntimeError("Start state exceeds joint limits!")
+        
+        
+        if grasp == True:
+            mug_location = scene.fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
+        else:
+            target_location = exo.KDLFrame([2.65,-1.0987,0.56,0,0,0]).get_translation_and_rpy()
+
+
+        T_grasp_begin = int(t_grasp_begin / problem.tau)
+        T_grasp_mid = int((t_grasp_begin + t_grasp_duration/2) / problem.tau)
+        T_grasp_end = int((t_grasp_begin + t_grasp_duration) / problem.tau)
+
+        # The target position needs to be reached during the grasping period
+        problem.set_rho('Position', 0, 0)
+        if grasp == True:
+            for t in range(T_grasp_begin, T_grasp_end):
+                problem.set_rho('Position', 1e4, t)
+                problem.set_goal('Position', mug_location[:3], t)
+        else:
+            for t in range(T_grasp_begin, T_grasp_end):
+                problem.set_rho('Position', 1e4, t)
+                problem.set_goal('Position', target_location[:3], t)
+
+        # The HSR has a poor reachability, so we deactivate the base tracking here
+        # problem.set_rho('BasePosition', 0, t)
+
+        # Height above the table 1 second before and after grasp
+        problem.set_rho('LiftOffTable', 1e2, T_grasp_begin - 10)
+        problem.set_rho('LiftOffTable', 1e3, T_grasp_end + 10)
+
+        # while grasping, align the gripper and try to maintain an
+        # intermediate-return-to-go pose (whole_body_move_to_neutral pose) 
+        # to smoothly transition to final pose
+        for t in range(T_grasp_begin, T_grasp_end):
+            problem.set_rho('AxisAlignment', 1e2, t)
+            problem.set_rho('IntermediateRTG', 0, t)
+            problem.set_rho('ReturnToGo', 0, t)
+
+        for t in range(T_grasp_end+20, problem.T-20):
+            problem.set_rho('IntermediateRTG', 1e3, t)
+            problem.set_rho('ArmLiftZero', 1e3, -1)
+        problem.set_rho('ReturnToGo', 1e3, -1)
+
+        zero_motion = np.zeros((problem.T,problem.N))
+        for t in range(problem.T):
+            zero_motion[t,:] = q_start
+        problem.initial_trajectory = zero_motion
+
+        solution = solver.solve()
+        print("Solved in", solver.get_planning_time(), "final cost", problem.get_cost_evolution()[1][-1])
+        # '''
+        # Show convergence plot
+        if do_plot:
+            fig = plt.figure(1)
+            plt.plot(problem.get_cost_evolution()[0], problem.get_cost_evolution()[1])
+            plt.yscale('log')
+            plt.ylabel('Cost')
+            plt.xlabel('Time (s)')
+            plt.xlim(0,np.max(problem.get_cost_evolution()[0]))
+            plt.title('Convergence')
+
+            # Show cost breakdown
+            fig = plt.figure(2)
+
+
+            costs = {}
+            ct = 1.0 / problem.tau / problem.T
+            for t in range(problem.T):
+                problem.update(solution[t,:],t)
+            for cost_task in problem.cost.indexing:
+                task = problem.cost.tasks[cost_task.id]
+                task_name = task.name
+                task_id = task.id
+                costs[task_name] = np.zeros((problem.T,))
+                # print(task_id, task_name, task, cost_task.start, cost_task.length, cost_task.startJ, cost_task.lengthJ)
+                for t in range(problem.T):
+                    ydiff = problem.cost.ydiff[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+                    rho = problem.cost.S[t][cost_task.startJ:cost_task.startJ+cost_task.lengthJ,cost_task.startJ:cost_task.startJ+cost_task.lengthJ]
+                    cost = np.dot(np.dot(ydiff, rho), ydiff)
+                    costs[task_name][t] = ct * cost
+
+
+            costs['Task'] = np.zeros((problem.T,))
+            costs['Transition'] = np.zeros((problem.T,))
+            for t in range(problem.T):
+                costs['Task'][t] = problem.get_scalar_task_cost(t)
+                costs['Transition'][t] = problem.get_scalar_transition_cost(t)
+            for cost in costs:
+                plt.plot(costs[cost], label=cost)
+            plt.xlim(0,problem.T)
+            plt.title('Cost breakdown across trajectory per task')
+            plt.show()
+            fig = plt.figure(7)
+            plt.plot(solution, label=scene.get_controlled_joint_names())
+            
+            
+            def gauss(n,sigma):
+                r = range(-int(n/2),int(n/2)+1)
+                return [1 / (sigma * sqrt(2*pi)) * exp(-float(x)**2/(2*sigma**2)) for x in r]
+
+            fig = plt.figure(8)
+            num_rows, num_cols = solution.shape
+            kernel = gauss((kernel_size-1)/2, sigma=1)
+            print(kernel)
+            padded = np.pad(solution,((3,3),(0,0)), 'reflect')
+            smoothed_solution = np.zeros((num_rows,num_cols))
+            for i in range(num_cols):
+                smoothed_solution[:,i] = np.convolve(padded[:,i], kernel, 'valid')
+
+            def calculate_diff(pos_array, dt):
+                pos_array = np.append(pos_array, [pos_array[-1]], axis=0)
+                vel_array = np.diff(pos_array, axis = 0)/dt
+                return vel_array
+
+        midpoint = int((t_grasp_begin + t_grasp_duration)/problem.tau)
+           
+        return solution, midpoint
+
+# create a trajectory file and write the base trajectory to it.
+def to_traj_file(soln, filename):
+    import sys
+    import os
+
+    rows, cols = soln.shape
+    # remove additional columns
+    if cols > 4:
+        soln = soln[:,cols-3:cols]
+        print("trimmed the columns")
+    
+    traj_file = os.path.abspath(filename)
+    # write to .traj file
+    traj_file = open(filename, "w")
+    traj_file.write("1\n")
+    traj_file.write("%d %d\n" %(rows, cols))
+    for i in range(rows):
+        traj_file.write("%f %f %f %f\n" %(soln[i,0], soln[i,1], soln[i,2], soln[i,3]))
+    traj_file.close()
+
+def to_file(soln, filename):
+    import sys
+    import os
+
+    rows, cols = soln.shape
+    traj_file = os.path.abspath(filename)
+    traj_file = open(filename, "w")
+    for i in range(rows):
+        traj_file.write("%E %E %E %E %E %E %E %E %E\n" %(soln[i,0], soln[i,1], soln[i,2], soln[i,3],
+        soln[i,4],soln[i,5],soln[i,6],soln[i,7],soln[i,8]))
+    traj_file.close()
+
+def create_base_traj(planner, goals):
+    # planner2 = DrivebyPickAndPlaceDemo(debug=True)
+    arg_len = len(goals)
+    assert(arg_len % 2 == 0)
+
+    segments = arg_len/2
+
+    start = goals[0]
+    goal = goals[1]
+    start2 = goals[2]
+    goal2 = goals[3]
+    # print(start)
+    # print(goal)
+    # print(start2)
+    # print(goal2)
+    # print(range(int(segments)))
+    # solution_approach= []
+    # for i in range(int(segments)):
+    #     solution_approach[i] = planner.solve_rrtconnect(goals[i*2], goals[i*2+1])
+    #     row_mid[i],col_mid[i] = np.shape(solution_approach)
+    #     if i > 0:
+    #         solution_approach[i]= np.delete(solution_approach[i],0,axis=0)
+    # whole_solution = np.concatenate((solution_approach),axis=0)
+    # create a .traj file
+    
+    # use rrtconnect to find a valid base trajectory that approaches the object
+    solution_approach = planner.solve_rrtconnect(start, goal)
+    solution_approach2 = planner.solve_rrtconnect(start2, goal2)
+    row_mid,col_mid = np.shape(solution_approach)
+    # remove redundant start point
+    solution_approach2= np.delete(solution_approach2,0,axis=0)
+
+    whole_solution = np.concatenate((solution_approach,solution_approach2))
+    
+    # plot(whole_solution)
+
+    # save the index of the transition between the two rrtconnect trajectories
+    #   since it is returned
+    row, col = whole_solution.shape
+
+    # set the desired velocity value for the entire trajectory
+    vel_limit = 0.5
+    # find find the xy velocity
+    diff = np.diff(whole_solution, axis=0)
+    distance = pow(diff,2)
+    distance = np.sum(distance, axis=1)
+    distance = np.sqrt(distance)
+    distance = np.insert(distance,0,0)
+    # create a time array to set velocity to vel_limit
+    dt = distance / vel_limit
+    time_arr = np.cumsum(dt)
+    # set the time in the trajectory file to the time array
+    solution = np.insert(whole_solution,0, time_arr, axis=1)
+
+    print(">>Writing to File")
+    # output base trajectory to traj file.
+    to_traj_file(solution, "base_trajectory/base_trajectory_file.traj")
+    
+    print(">>Created Base Trajectory<<")
+
+    # return time to grasp object and duration of trajectory.
+    return time_arr[row_mid], time_arr[-1]
+
+
+if __name__ == '__main__': 
+    exo.Setup.init_ros()
+    start_time = ti.time()
+
+    debug = True
+    # # Base poses:
+    # # starting pose
+    # start = [-2.1, 1.2, -1.57]
+    # # grasp the soda can
+    # goal = [-0.86,0.5,-1.57]
+    # start2 = [-0.86,0.5,-1.57]
+    # # go to end of grasping segment. also start of placing
+    # goal2 = [-0.86,-1.35,-1.57]
+    # # go to placing location
+    # start3 = [2,-1.00, -1.57]
+    # # return to start
+    # goal3 = [-2.1,1.2,-1.57]
+
+    planner = DrivebyPickAndPlaceDemo(debug=False)
+
+     # attach soda can to table
+    scene = planner.ik_problem.get_scene()
+    scene.attach_object("SodaCan", "TargetObject")
+    scene.attach_object_local("TargetObject", "LongBoi", exo.KDLFrame([0.0,0.0,0.06]))#+0.04]))
+    scene.set_model_state_map({'hand_motor_joint': 0.7, 'hand_l_spring_proximal_joint':0.9, 'hand_l_distal_joint': -0.6, 'hand_r_spring_proximal_joint':0.9, 'hand_r_distal_joint': -0.6, 'wrist_roll_joint': 0, 'wrist_flex_joint': -np.pi/2, 'arm_roll_joint': 0})
+
+    # stuff to define
+    # {
+    # starting base pose
+    start = [-2.1, 1.2, -1.57]
+    # some valid base pose between grasping and placing positions
+    intermediate_base_position = [-0.86,-1.35,-1.57]
+    # soda can/mug location
+    mug_location = planner.ik_problem.get_scene().fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
+    # placing location
+    target_location = exo.KDLFrame([2.65,-1.0987,0.56,0,0,0]).get_translation_and_rpy()
+    # time duration of gripper closing
+    t_grasp_duration = 0.25
+    # timestep for final trajectory in seconds.
+    dt = 0.1
+    # }
+    
+    if debug:
+        print(">>Setup Scene<<")
+
+    # use ik to get a good grasp pose
+    q_goal_approach = planner.solve_ik(mug_location[0:3], start_time=0, base_position_rho=0)
+    q_goal_approach = planner.clamp_state_to_within_joint_bounds(q_goal_approach)
+
+    goal = q_goal_approach[0:3]
+
+    if debug:
+        print(">>IK Step 1<<")
+    planner.instantiate_ik()
+    # ik to get placing base pose
+    q_goal_approach2 = planner.solve_ik(target_location[0:3], start_time=0, base_position_rho=0)
+    q_goal_approach2 = planner.clamp_state_to_within_joint_bounds(q_goal_approach2)
+    goal2 = q_goal_approach2[0:3]
+    if debug:
+        print(">>IK Step 2<<")
+        print(q_goal_approach)
+        print(q_goal_approach2)
+    # publish_pose(q_goal_approach2, planner.ik_problem, t=0)
+    # exit()
+
+    # Check if this configuration is collision-free
+    planner.ik_problem.update(q_goal_approach)
+    print("q_goal_approach valid?", planner.ik_problem.get_scene().is_state_valid(True))
+    assert(planner.ik_problem.get_scene().is_state_valid(True))
+
+    planner.ik_problem.update(q_goal_approach2)
+    print("q_goal_approach valid?", planner.ik_problem.get_scene().is_state_valid(True))
+    assert(planner.ik_problem.get_scene().is_state_valid(True))
+
+    if debug:
+        print(">>Check IKs<<")
+
+    # create base trajectory to follow
+    # goal_arr = [start, goal, start2, goal2]
+    goal_arr = [start, goal, goal, intermediate_base_position]
+    t_grasp_begin, t_duration = create_base_traj(planner, goal_arr)
+
+    planner.instantiate_aico()
+    planner.set_start_state(start)
+    solution, midpoint = planner.solve_aico(t_grasp_begin, t_grasp_duration, t_duration, grasp = True)
+
+    if debug:
+        print(">>AICO Step 1<<")
+
+    goal_arr = [intermediate_base_position, goal2, goal2, start]
+    print(goal_arr)
+    t_grasp_begin2, t_duration2 = create_base_traj(planner, goal_arr)
+
+    # reinstantiate aico to get new base traj
+    planner.instantiate_aico()
+    planner.set_start_state(solution[-1])
+    solution2, midpoint2 = planner.solve_aico(t_grasp_begin2, t_grasp_duration, t_duration2, grasp = False)
+
+    if debug:
+        print(">>AICO Step 2<<")
+
+    # solution2[:,0] += solution[-1,0]
+
+    print("================")
+    print(solution)
+    print("=============================================")
+    print(solution2)
+
+
+    whole_solution = np.append(solution, solution2, axis=0)
+    print(whole_solution)
+    row, col = np.shape(whole_solution)
+    time = np.arange(0,row,1) * dt
+    # set the time in the trajectory file to the time array
+    whole_solution = np.insert(whole_solution, 0, time, axis=1)
+    print(whole_solution)
+
+    row_mid, col_mid = np.shape(solution)
+    midpoint2 += time[row_mid]*10
+
+    if debug:
+        print(">>Concatenate Trajectories<<")
+
+    # Add a custom publish_trajectory to support attaching the Coke can...
+    def publish_trajectory(traj, T, problem, once=False):
+        if len(traj) == 0:
+            print("Trajectory has zero elements")
+            raise
+        signal.signal(signal.SIGINT, sig_int_handler)
+        print('Playing back trajectory ' + str(T) + 's')
+        dt = float(T) / float(len(traj))
+        t = 0
+        # grasp_times = [t_grasp_begin, t_grasp_duration]
+        print("saving trajectory")
+        np.save('example_trajectory_t'+"14",traj)
+        mug_location = planner.aico_problem.get_scene().fk('SodaCan', exo.KDLFrame(), '', exo.KDLFrame()).get_translation_and_rpy()
+        target_location = exo.KDLFrame([2.65,-1.0987,0.56,0,0,0]).get_translation_and_rpy()
+
+        print(midpoint)
+        print(midpoint2)
+        while True:
+            try:
+                publish_pose(traj[t], problem, float(t) * dt)
+                sleep(dt)
+
+                # Create screenshot if desired
+                if use_screenshot:
+                    screenshot('/tmp/hsr_driveby_visualisation_{:03d}.png'.format(t))
+                    sleep(0.1)
+                    if t == len(traj) - 1:
+                        print("Screenshots created, exiting.")
+                        break
+
+                if t >= len(traj) - 1 and once:
+                    return
+                t = (t + 1) % len(traj)
+
+                if t == midpoint:
+                    planner.aico_problem.get_scene().attach_object("SodaCan", "hand_palm_link")
+                elif t == 0:
+                    planner.aico_problem.get_scene().attach_object_local("SodaCan", "", mug_location)
+                elif t == midpoint2:
+                    planner.aico_problem.get_scene().detach_object("SodaCan")
+                    planner.aico_problem.get_scene().attach_object_local("SodaCan","", target_location)
+            except KeyboardInterrupt:
+                return False
+    if debug:
+        print(">>Publish and Export<<")
+    print(mug_location)
+    print(target_location)
+    print("whole solution time: " + str(whole_solution[-1,0]))
+    # to_file(whole_solution, "whole_soln.txt")
+    np.save('whole_soln',whole_solution)
+    print(whole_solution[:,1:])
+
+    print(">>>Time Elapsed: %f<<<" %(ti.time() - start_time))
+
+
+    publish_trajectory(whole_solution[:,1:], whole_solution[-1,0], planner.aico_problem)
+
