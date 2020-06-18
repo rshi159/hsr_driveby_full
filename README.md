@@ -51,10 +51,6 @@
 - uses IK solver to find base positions for pickup and placing pose.
 - RRTConnect to go from base poses: start_pose => grasp_pose => intermediate_pose (some pose between the start and placing location that acts as the end pose of the picking segment and the start pose of the placing segment) => place_pose => start_pose
 - AICO solver to solve for grasping and placing motions.
-
-### 4th Year Project Paper
-- [4th Year Paper](https://github.com/rshi159/4th-Year-Paper)
- 
 - need to specify start pose, intermediate pose, soda_can location, target_placing location, duration_of_gripper_opening/closing, and timestep for AICO solver. These are all currently hardcoded.
 #### Run
 - In a terminal, start roscore: `roscore`
@@ -62,6 +58,8 @@
 - In a separate terminal, run the planner: `roscd hsr_driveby_full/scripts/rob_stuff` `./hsr_wrs_world_pick_and_place_full`
 #### Video
 - see hsr_pick_and_place.mp4
+### 4th Year Project Paper
+- [4th Year Paper](https://github.com/rshi159/4th-Year-Paper/blob/master/Robert_Shi_Motion_Planning_for_Mobile_Robot_Navigation_Using_a_Toyota_Human_Support_Robot-_Motion_Planning_for_a_Drive-by_Pick-And-Place_Application.pdf)
 
 
 
