@@ -43,7 +43,7 @@
 - in a separate terminal window: `roscd hsr_driveby_full/scripts/rob_stuff` `./hsrb_exotica_python_script.py`
 - by default, it should run a saved trajectory. comment and uncomment a line in the main function of hsrb_exotica_python_script.py.
 ### Video
--see go_to_location.movie.mp4 and go_to_location.movie_2.mp4
+- see go_to_location.movie.mp4 and go_to_location.movie_2.mp4
  
 ### Pick and Place Planner
 #### Description
