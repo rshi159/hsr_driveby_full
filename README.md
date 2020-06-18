@@ -47,16 +47,16 @@
  
 ### Pick and Place Planner
 #### Description
- -Driveby pick up of soda can and driveby placing of soda can. In planning scene. Working on running in Gazebo. Kinda screwed up on converting SDF => Scene files. world frame offest by 90 degrees in xy plane. Need to fix /resources/sdf_to_scene_15_in_world_v2
- -uses IK solver to find base positions for pickup and placing pose.
- -RRTConnect to go from base poses: start_pose => grasp_pose => intermediate_pose (some pose between the start and placing location that acts as the end pose of the picking segment and the start pose of the placing segment) => place_pose => start_pose
- -AICO solver to solve for grasping and placing motions.
+- Driveby pick up of soda can and driveby placing of soda can. In planning scene. Working on running in Gazebo. Kinda screwed up on converting SDF => Scene files. world frame offest by 90 degrees in xy plane. Need to fix /resources/sdf_to_scene_15_in_world_v2
+- uses IK solver to find base positions for pickup and placing pose.
+- RRTConnect to go from base poses: start_pose => grasp_pose => intermediate_pose (some pose between the start and placing location that acts as the end pose of the picking segment and the start pose of the placing segment) => place_pose => start_pose
+- AICO solver to solve for grasping and placing motions.
  
- -need to specify start pose, intermediate pose, soda_can location, target_placing location, duration_of_gripper_opening/closing, and timestep for AICO solver. These are all currently hardcoded.
+- need to specify start pose, intermediate pose, soda_can location, target_placing location, duration_of_gripper_opening/closing, and timestep for AICO solver. These are all currently hardcoded.
 #### Run
- -In a terminal, start roscore: `roscore`
- -In a separate terminal, start rviz for the hsr: `roscd hsr_driveby_full/resources` `rviz -d hsr_driveby.rviz`
- -In a separate terminal, run the planner: `roscd hsr_driveby_full/scripts/rob_stuff` `./hsr_wrs_world_pick_and_place_full`
+- In a terminal, start roscore: `roscore`
+- In a separate terminal, start rviz for the hsr: `roscd hsr_driveby_full/resources` `rviz -d hsr_driveby.rviz`
+- In a separate terminal, run the planner: `roscd hsr_driveby_full/scripts/rob_stuff` `./hsr_wrs_world_pick_and_place_full`
 #### Video
 - see hsr_pick_and_place.mp4
 
