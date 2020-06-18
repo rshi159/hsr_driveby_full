@@ -26,7 +26,7 @@
   - 3. comment and uncomment line in main function.
 #### Video
 - see driveby_pickup.mp4
-  
+=============================================================================================================================
 ### Driveby table with Apriltags
 #### Description
 - Tried to incorporate Apriltags to identify position of sodacan
@@ -44,7 +44,7 @@
 - by default, it should run a saved trajectory. comment and uncomment a line in the main function of hsrb_exotica_python_script.py.
 #### Video
 - see go_to_location.movie.mp4 and go_to_location.movie_2.mp4
- 
+=============================================================================================================================
 ### Pick and Place Planner
 #### Description
 - Driveby pick up of soda can and driveby placing of soda can. In planning scene. Working on running in Gazebo. Kinda screwed up on converting SDF => Scene files. world frame offest by 90 degrees in xy plane. Need to fix /resources/sdf_to_scene_15_in_world_v2
