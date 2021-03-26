@@ -58,6 +58,7 @@
 - In a separate terminal, run the planner: `roscd hsr_driveby_full/scripts/rob_stuff` `./hsr_wrs_world_pick_and_place_full`
 #### Video
 - see hsr_pick_and_place.mp4
+- [![hsr drive-by pick-and-place in planning space](https://i9.ytimg.com/vi/2aPWpdt2GbE/mq3.jpg?sqp=CMjy94IG&rs=AOn4CLBD2EleyT8tbUIq_f5a4atipPrIMQ)](https://youtu.be/2aPWpdt2GbE)
 ### 4th Year Project Paper
 - [4th Year Paper](https://github.com/rshi159/4th-Year-Paper/blob/master/Robert_Shi_Motion_Planning_for_Mobile_Robot_Navigation_Using_a_Toyota_Human_Support_Robot-_Motion_Planning_for_a_Drive-by_Pick-And-Place_Application.pdf)
 
